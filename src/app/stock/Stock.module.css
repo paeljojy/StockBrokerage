@@ -1,6 +1,8 @@
-* {
-    min-width: 0;
-}
+
+/* FIXME: Why does this have to be pure in nextjs? */
+/* * { */
+/*     min-width: 0; */
+/* } */
 
 body {
     color: rgb(var(--foreground-rgb));
