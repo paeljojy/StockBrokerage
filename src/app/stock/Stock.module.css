@@ -4,10 +4,10 @@
 /*     min-width: 0; */
 /* } */
 
-body {
-    color: rgb(var(--foreground-rgb));
-    background: #1e1e1e;
-}
+/* body { */
+/*     color: rgb(var(--foreground-rgb)); */
+/*     background: #1e1e1e; */
+/* } */
 
 .pageTitle {
     margin: 0;
