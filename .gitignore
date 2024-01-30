@@ -41,3 +41,6 @@ next-env.d.ts
 .vs/
 Session.vim
 
+# Ignore npm lock files
+package-lock.json
+
