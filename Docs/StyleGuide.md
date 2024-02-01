@@ -5,6 +5,9 @@
 ### Source files
 src/*
 
+#### Pages
+src/Views
+
 ### Frontend 
 public/*
 
@@ -24,7 +27,6 @@ public/*
 # Linter config
  .eslintrc.cjs
 
-
 ## Development tools
 
 ### Developer tools
@@ -35,7 +37,6 @@ Scripts/
 
 ### Developer documentation
 Docs/*
-
 
 ### 
 

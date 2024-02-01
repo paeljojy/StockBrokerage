@@ -4,7 +4,8 @@ pushd %~dp0
 
 npm install
 npm update
-npm run build
+npm run dev
+@REM npm run build
 
 popd
 

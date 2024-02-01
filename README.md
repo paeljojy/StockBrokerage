@@ -1,3 +1,4 @@
+[![Docker Image CI](https://github.com/paeljojy/StockBrokerage/actions/workflows/docker-image.yml/badge.svg)](https://github.com/paeljojy/StockBrokerage/actions/workflows/docker-image.yml)
 [![build](https://github.com/paeljojy/StockBrokerage/actions/workflows/main.yml/badge.svg)](https://github.com/paeljojy/StockBrokerage/actions/workflows/main.yml)
 
 # Apple Stock Brokerage Application

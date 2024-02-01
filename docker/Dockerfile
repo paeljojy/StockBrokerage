@@ -1,5 +1,5 @@
 FROM node:lts-alpine
-WORKDIR /app
+WORKDIR ../
 COPY package.json ./
 RUN  npm install
 EXPOSE 8080
