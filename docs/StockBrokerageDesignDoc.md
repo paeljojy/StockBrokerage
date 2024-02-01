@@ -76,3 +76,5 @@ Web application should fetch latest market data of the stock from a feed in orde
 | 2   | 500          |  210       |
 
 
+
+

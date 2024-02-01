@@ -1,0 +1,50 @@
+name: build
+
+on: [push, pull_request]
+
+# TODO: CI/CD 
+# TODO: Add build command
+# TODO: Add test command
+# TODO: build badges
+# TODO: Add docker
+jobs:
+  Linux:
+    runs-on: self-hosted-linux
+    strategy:
+      matrix:
+        config: [debug, release, production]
+        platform: [x64]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: configure
+        run: |
+          npm install
+      - name: build 
+        run: |
+          npm run dev
+          
+  Windows:
+    runs-on: self-hosted-windows
+    strategy:
+      matrix:
+        config: [debug, release, production]
+        platform: [x64]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Add MSBuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: configure
+        # working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: |
+          npm install
+
+      - name: build 
+        # working-directory: ${{env.GITHUB_WORKSPACE}}
+        run: |
+          npm run dev
+
+

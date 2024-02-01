@@ -2,6 +2,28 @@
 Read docs/* for more information
 
 # Dependencies
-nextjs
+vuejs
 pocketbase
+
+# Building
+
+```bash
+npm install
+npm run build
+
+# Run for development
+npm run dev 
+```
+
+# Scripts provided
+Install dependencies and build the project for the first time.
+```bash
+# Linux / Mac / WSL
+./Scripts/init.sh
+```
+
+```batch
+@REM Windows
+Scripts/init.bat 
+```
 
