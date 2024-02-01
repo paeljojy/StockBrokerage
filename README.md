@@ -1,3 +1,5 @@
+[![build](https://github.com/paeljojy/StockBrokerage/actions/workflows/main.yml/badge.svg)](https://github.com/paeljojy/StockBrokerage/actions/workflows/main.yml)
+
 # Apple Stock Brokerage Application
 Read docs/* for more information
 
