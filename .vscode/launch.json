@@ -11,7 +11,7 @@
             "webpack://src/*": "${webRoot}/*"
         }
     },
-    // DONT USE THESE! Just for reference
+    // INFO: DONT USE THESE! Just for reference
     {
       "name": "Next.js: debug server-side",
       "type": "node-terminal",

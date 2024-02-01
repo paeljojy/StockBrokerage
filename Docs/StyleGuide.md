@@ -25,7 +25,6 @@ public/*
  .eslintrc.cjs
 
 
-
 ## Development tools
 
 ### Developer tools
@@ -36,4 +35,7 @@ Scripts/
 
 ### Developer documentation
 Docs/*
+
+
+### 
 

@@ -1,6 +1,7 @@
 {
 	"version": "2.0.0",
 	"tasks": [
+        // OLD STUFF, don't use!
 		{
 			"type": "npm",
 			"script": "dev",
