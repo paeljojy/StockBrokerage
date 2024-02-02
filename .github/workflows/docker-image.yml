@@ -18,8 +18,3 @@ jobs:
       run: 
         docker build . --file docker/Dockerfile --tag stock_brokerage:$(date +%s)
 
-
-
-# sudo apt install sqlite3 -y
-# sqlite3 stock_brokerage.db < stock_brokerage.sql
-
