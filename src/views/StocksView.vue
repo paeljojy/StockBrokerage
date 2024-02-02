@@ -17,7 +17,7 @@ export default {
 
 <template>
   <div class="stocks">
-    <h1>This is an stocks trading page</h1>
+    <h1>This is the stocks trading page</h1>
     <button @click="fetchStocks">Fetch Stocks</button>
   </div>
 </template>

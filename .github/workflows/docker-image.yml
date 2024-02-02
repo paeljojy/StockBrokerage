@@ -15,4 +15,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file docker/Dockerfile --tag my-image-name:$(date +%s)
+      run: 
+        docker build . --file docker/Dockerfile --tag stock_brokerage:$(date +%s)
+
+
+
+# sudo apt install sqlite3 -y
+# sqlite3 stock_brokerage.db < stock_brokerage.sql
+
