@@ -5,11 +5,12 @@ import Sidebar from './components/SideBar.vue'
 </script>
 
 <template>
-  <header>
-    <div class="app">
+  <div class="sidebar">
 		  <Sidebar />
 	  </div>
-    
+
+    <div id="main-container">
+  <header>
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
@@ -24,6 +25,7 @@ import Sidebar from './components/SideBar.vue'
   </header>
 
   <RouterView />
+</div>
 </template>
 
 <style scoped>
