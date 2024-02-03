@@ -29,6 +29,10 @@ import Sidebar from './components/SideBar.vue'
 </template>
 
 <style scoped>
+#main-container {
+  flex-grow: 1;
+}
+
 header {
   line-height: 1.5;
 }
