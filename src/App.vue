@@ -15,11 +15,11 @@ import Sidebar from './components/SideBar.vue'
     <div class="wrapper">
       <HelloWorld msg="You did it!" />
 
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-        <RouterLink to="/stocks">Stocks</RouterLink>
-      </nav>
+      <!-- <nav> -->
+      <!--   <RouterLink to="/">Home</RouterLink> -->
+      <!--   <RouterLink to="/about">About</RouterLink> -->
+      <!--   <RouterLink to="/stocks">Stocks</RouterLink> -->
+      <!-- </nav> -->
     </div>
   </header>
 
