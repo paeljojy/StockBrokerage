@@ -5,11 +5,11 @@ import Sidebar from './components/SideBar.vue'
 </script>
 
 <template>
-  <div class="app">
-		<Sidebar />
-	</div>
-
   <header>
+    <div class="app">
+		  <Sidebar />
+	  </div>
+    
     <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
 
     <div class="wrapper">
