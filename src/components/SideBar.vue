@@ -6,27 +6,23 @@
 
 		<div class="menu-toggle-wrap">
 			<button class="menu-toggle" @click="ToggleMenu">
-				<span class="material-icons">keyboard_double_arrow_right</span>
+				<span class="material-icons">>></span>
 			</button>
 		</div>
 
 		<h3>Menu</h3>
 		<div class="menu">
 			<router-link to="/" class="button">
-				<span class="material-icons">home</span>
+				<span class="material-icons">H</span>
 				<span class="text">Home</span>
 			</router-link>
+			<router-link to="/stocks" class="button">
+				<span class="material-icons">S</span>
+				<span class="text">Stocks</span>
+			</router-link>
 			<router-link to="/about" class="button">
-				<span class="material-icons">description</span>
+				<span class="material-icons">A</span>
 				<span class="text">About</span>
-			</router-link>
-			<router-link to="/team" class="button">
-				<span class="material-icons">group</span>
-				<span class="text">Team</span>
-			</router-link>
-			<router-link to="/contact" class="button">
-				<span class="material-icons">email</span>
-				<span class="text">Contact</span>
 			</router-link>
 		</div>
 
