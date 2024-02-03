@@ -18,7 +18,7 @@ export async function getStocks(): Promise<any> {
     cachedData = data;
     lastFetchTime = currentTime;
     
-    console.log(data);
+    /* console.log(data); */
     return data;
 }
 
