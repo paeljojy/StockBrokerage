@@ -13,6 +13,13 @@ export default {
     }
   }
 }
+
+const callback = (response) => {
+  // This callback will be triggered when the user selects or login to
+  // his Google account from the popup
+  console.log("Handle the response", response)
+}
+
 </script>
 
 <template>
@@ -20,6 +27,7 @@ export default {
     <h1>This is the stocks trading page</h1>
     <button @click="fetchStocks">Fetch Stocks</button>
   </div>
+  <GoogleLogin :callback="callback"/>
 </template>
 
 <style>
