@@ -16,13 +16,13 @@ import Sidebar from './components/SideBar.vue'
       <div class="wrapper">
         <HelloWorld msg="You did it!" />
 
-        <nav>
-          <RouterLink to="/">Home</RouterLink>
-          <RouterLink to="/stocks">Stocks</RouterLink>
-          <RouterLink to="/about">About</RouterLink>
-        </nav>
-      </div>
-    </header>
+      <!-- <nav> -->
+      <!--   <RouterLink to="/">Home</RouterLink> -->
+      <!--   <RouterLink to="/about">About</RouterLink> -->
+      <!--   <RouterLink to="/stocks">Stocks</RouterLink> -->
+      <!-- </nav> -->
+    </div>
+  </header>
 
     <RouterView />
   </div>
