@@ -16,30 +16,17 @@
 			<router-link to="/" class="button">
 				<!-- <span class="material-icons">home</span> -->
                 <i class="fas fa-home" />
+				<span class="text">Home</span>
 			</router-link>
 			<router-link to="/stocks" class="button">
 				<!-- <span class="material-icons">description</span> -->
-				<!-- <span class="text">About</span> -->
                 <a class="fas fa-apple-whole" />
-			</router-link>
-			<router-link to="/stocks" class="button">
-				<span class="material-icons">S</span>
 				<span class="text">Stocks</span>
 			</router-link>
 			<router-link to="/about" class="button">
 				<!-- <span class="material-icons">description</span> -->
-				<!-- <span class="text">About</span> -->
                 <a class="fas fa-circle-info" />
-			</router-link>
-			<router-link to="/team" class="button">
-				<!-- <span class="material-icons">group</span> -->
-				<!-- <span class="text">Team</span> -->
-                <a class="fas fa-user" />
-			</router-link>
-			<router-link to="/contact" class="button">
-				<!-- <span class="material-icons">email</span> -->
-				<!-- <span class="text">Contact</span> -->
-                <i class="fas fa-envelope" />
+				<span class="text">About</span>
 			</router-link>
 		</div>
 
@@ -48,9 +35,9 @@
 		
 		<div class="menu">
 			<router-link to="/settings" class="button">
-                <i class="fas fa-gears" />
 				<!-- <span class="material-icons">settings</span> -->
-				<!-- <span class="text">Settings</span> -->
+                <a class="fas fa-gears" />
+				<span class="text">Settings</span>
 			</router-link>
 		</div>
 	</aside>
@@ -69,6 +56,15 @@ const ToggleMenu = () => {
 </script>
 
 <style lang="scss" scoped>
+.logo {
+	margin-left: -0.5rem;
+}
+
+.button > svg {
+	min-width: 19px;
+	margin-right: 0.5rem;
+}
+
 aside {
 	display: flex;
 	flex-direction: column;
