@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host",
-    "build": "run-p type-check \"build-only {@}\" --",
+    "build": "vite build",
     "preview": "vite preview",
     "test:unit": "vitest --ui",
     "test:unit:term": "vitest",
     "test:unit:runner": "vitest --run",
-    "build-only": "vite build",
+    "build-type-check": "run-p type-check \"build-only {@}\" --",
     "type-check": "vue-tsc --build --force",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
     "format": "prettier --write src/"
