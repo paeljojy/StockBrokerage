@@ -20,12 +20,18 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 21.6.1
-      - name: build 
+      - name: configuration 
         run: |
           npm install --verbose
-          npm run lint
           npm update 
+      - name: linter 
+        run: |
+          npm run lint
+      - name: build 
+        run: |
           npm run build
+      - name: tests
+        run: |
           npm run test:unit:runner
 
           
