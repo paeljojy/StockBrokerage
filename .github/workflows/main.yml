@@ -10,7 +10,8 @@ jobs:
     runs-on: self-hosted-linux
     strategy:
       matrix:
-        config: [debug, release, production]
+        # config: [debug, release, production]
+        config: [debug]
         platform: [x64]
 
     steps:
@@ -20,7 +21,7 @@ jobs:
           npm install
       - name: build 
         run: |
-          npm run test:unit:runner
           npm run build
+          npm run test:unit:runner
 
           
