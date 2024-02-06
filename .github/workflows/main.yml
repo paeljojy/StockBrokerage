@@ -16,8 +16,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.14
       - name: build 
         run: |
+          npm install
+          npm run lint
           npm update 
           npm run build
           npm run test:unit:runner
