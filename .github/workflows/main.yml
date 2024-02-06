@@ -20,7 +20,7 @@ jobs:
           npm install
       - name: build 
         run: |
-          npm run test:unit
-          npm run dev
+          npm run test:unit:runner
+          npm run build
 
           
