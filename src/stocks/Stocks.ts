@@ -1,3 +1,31 @@
+
+/* --Drop table if it exists */
+/* DROP TABLE IF EXISTS users; */
+/**/
+/* --Create the user table */
+/* CREATE TABLE users( */
+/* sub INTEGER NOT NULL, */
+/* email TEXT, */
+/* CONSTRAINT users_pk PRIMARY KEY(sub) */
+/* ); */
+/**/
+/* --Drop table if it exists */
+/* DROP TABLE IF EXISTS bids; */
+/**/
+/* --Create user bids */
+/* CREATE TABLE bids( */
+/* bid_id INTEGER NOT NULL, */
+/* "user" INTEGER, */
+/* CONSTRAINT bids_pk PRIMARY KEY(bid_id) */
+/* );`, (_, res) => console.log(res) */
+
+/* export async function getDB(): Promise<any> { */
+/*     const db = new Database('Database/Main.db'); */
+/*         db.get(`SELECT RANDOM() % 100 as result;`, (_, res) => console.log(res) */
+/*     ); */
+/*     return db; */
+/* } */
+
 let lastFetchTime: number | null = null;
 let cachedData: any = null;
 
@@ -17,7 +45,7 @@ export async function getStocks(): Promise<any> {
     // Update the cache and the fetch time
     cachedData = data;
     lastFetchTime = currentTime;
-    
+
     /* console.log(data); */
     return data;
 }
