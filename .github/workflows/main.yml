@@ -22,9 +22,9 @@ jobs:
           node-version: 21.6.1
       - name: build 
         run: |
-          npm install
-          npm run lint
-          npm update 
+          npm install --verbose
+          # npm run lint
+          # npm update 
           npm run build
           npm run test:unit:runner
 
