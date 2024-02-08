@@ -27,8 +27,9 @@ export default {
         /*     console.log("Creating DB"); */
         /*     this.db = await getDB(); */
         /* } */
-        async getDB() {
+        async get_database_data_from_server() {
             this.db = await getDB();
+            const t = "test";
         }
     }
 }
@@ -39,7 +40,7 @@ export default {
     <div class="stocks">
         <h1>This is the stocks trading page</h1>
         <button @click="fetchStocks">Fetch Stocks</button>
-        <button @click="getDB">Create DB</button>
+        <button @click="get_database_data_from_server">Create DB</button>
     </div>
     <GoogleLogin :callback="callback" />
 </template>
