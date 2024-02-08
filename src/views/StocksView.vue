@@ -1,7 +1,7 @@
 <script lang="ts">
 import { getStocks } from '../stocks/Stocks.ts'
+import { getDB } from '../stocks/Stocks.ts'
 import { decodeCredential } from 'vue3-google-login'
-import { Database } from 'sqlite3';
 
 /* import { getDB } from '../stocks/Stocks.ts' */
 
@@ -14,7 +14,8 @@ export default {
             callback: (response) => {
                 console.log("Logged In!");
                 console.log(decodeCredential(response.credential));
-            }
+            },
+            db: []
         }
     },
     methods: {
@@ -27,9 +28,7 @@ export default {
         /*     this.db = await getDB(); */
         /* } */
         async getDB() {
-            let db = new Database('Database/Main.db');
-
-            console.log(db.get(`SELECT RANDOM() % 100 as result;`));
+            this.db = await getDB();
         }
     }
 }

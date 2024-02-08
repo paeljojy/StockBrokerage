@@ -26,6 +26,18 @@
 /*     return db; */
 /* } */
 
+/* import mariadb from 'mariadb'; */
+
+export async function getDB() {
+    console.log("getDB() called on frontend!");
+    fetch('http://localhost:3000/api/data')
+        /* fetch('http://localhost:3000/') */
+        .then(response => response.json())
+        .then(data => console.log(data));
+}
+
+getDB();
+
 let lastFetchTime: number | null = null;
 let cachedData: any = null;
 

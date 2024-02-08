@@ -7,19 +7,24 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules/
 .DS_Store
-dist/
-dist-ssr/
 coverage/
 *.local
+
+# Server build files
+build/
+
+# Frontend build files
+node_modules/
+dist/
+dist-ssr/
 
 /cypress/videos/
 /cypress/screenshots/
 
 *.tsbuildinfo
 
-# Ignore IDE files
+# IDE files
 .idea/
 .vs/
 Session.vim
@@ -29,6 +34,6 @@ Session.vim
 *.sln
 *.sw?
 
-# Ignore npm lock files
+# npm lock files
 package-lock.json
 

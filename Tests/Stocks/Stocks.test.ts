@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { expect } from 'vitest'
 
 import { getStocks } from '../../src/stocks/Stocks.ts'
 import { test } from 'vitest';
