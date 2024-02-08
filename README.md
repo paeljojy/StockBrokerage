@@ -5,17 +5,27 @@
 Read docs/* for more information
 
 # Dependencies
+## Frontend
 vuejs
-pocketbase
+## Backend
+expressjs
 
 # Building
 
+## Frontend
 ```bash
 npm install
 npm run build
 
 # Run for development
 npm run dev 
+
+## Backend
+npm install
+cd Server
+tsc && node dist/Server.js
+
+
 ```
 
 # Scripts provided

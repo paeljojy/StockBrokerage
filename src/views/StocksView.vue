@@ -1,6 +1,6 @@
 <script lang="ts">
-import { getStocks } from '../stocks/Stocks.ts'
-import { getDB } from '../stocks/Stocks.ts'
+import { getStocksFromServer } from '../stocks/StocksAPI.ts'
+import { getDB } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
 
 /* import { getDB } from '../stocks/Stocks.ts' */
@@ -20,16 +20,10 @@ export default {
     },
     methods: {
         async fetchStocks() {
-            this.stocks = await getStocks();
+            this.stocks = await getStocksFromServer();
         },
-        /* , */
-        /* async createDb() { */
-        /*     console.log("Creating DB"); */
-        /*     this.db = await getDB(); */
-        /* } */
         async get_database_data_from_server() {
             this.db = await getDB();
-            const t = "test";
         }
     }
 }
