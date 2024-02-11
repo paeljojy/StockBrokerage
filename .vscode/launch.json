@@ -19,6 +19,15 @@
         "sourceMapPathOverrides": {
             "webpack://src/*": "${webRoot}/*"
         }
-    }
+    },
+    {
+      "name": "Python Debugger: Flask",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "flask",
+      "env": { "FLASK_APP": ".\\server\\server.py", "FLASK_DEBUG": "1" },
+      "args": ["run", "--no-debugger", "--no-reload"],
+      "jinja": true
+    },
   ]
 }

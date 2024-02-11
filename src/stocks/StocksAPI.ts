@@ -30,7 +30,7 @@
 
 export async function getDB(): Promise<any> {
     console.log("getDB() called on frontend!");
-    const data = fetch('http://localhost:3000/api/data')
+    const data = fetch('http://127.0.0.1:5000/getdb')
         /* fetch('http://localhost:3000/') */
         .then(response => response.json())
         .then(data => console.log(data));

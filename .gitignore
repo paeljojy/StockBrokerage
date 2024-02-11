@@ -37,3 +37,6 @@ Session.vim
 # npm lock files
 package-lock.json
 
+# python venv and temp files
+.venv/
+__pycache__/

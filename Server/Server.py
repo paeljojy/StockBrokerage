@@ -11,7 +11,7 @@ def hello_world():
 
 @app.route('/getdb', methods=['GET'])
 def getdb():
-    conn = sqlite3.connect('../Database/Main.db')
+    conn = sqlite3.connect('Database/Main.db')
     cursor = conn.execute("SELECT * FROM USERS")
     list = []
     for row in cursor:
