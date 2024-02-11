@@ -8,7 +8,7 @@ pushd "$(dirname "$0")/.." > /dev/null
 # node Server/dist/Server.js
 
 source venv/bin/activate
-python Server.py
+flask --app Server run
 
 popd > /dev/null
 
