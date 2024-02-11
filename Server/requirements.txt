@@ -1,6 +1,5 @@
 flask
 requests
-pysqlite3
 mariadb
 
 
