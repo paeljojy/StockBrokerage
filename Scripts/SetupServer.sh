@@ -2,9 +2,13 @@
 
 pushd "$(dirname "$0")/.." > /dev/null
 
-cd Server
-npm install 
-tsc
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 
+# cd Server
+# npm install 
+# tsc
+#
 popd > /dev/null
 
