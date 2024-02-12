@@ -8,7 +8,6 @@ import requests
 
 class Server():
     cachedData = None
-    cachedData = None
     lastFetchTime = None
 
     def init(self):
@@ -40,7 +39,7 @@ def resolveCachedData(server):
     data = res.json()
 
     # Update the cache and the fetch time
-    cachedData = data
+    server.cachedData = data
     server.lastFetchTime = server.currentTime
 
     return data
