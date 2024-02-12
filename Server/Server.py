@@ -1,15 +1,16 @@
-import flask
-from flask import request, jsonify
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import sqlite3
 import mariadb
 
-app = flask.Flask(__name__)
+app = Flask(__name__)
+CORS(app)
 
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
 
-@app.route('/getdb', methods=['GET'])
+@app.route('/getdb')
 def getdb():
     conn = sqlite3.connect('Database/Main.db')
     cursor = conn.execute("SELECT * FROM USERS")
