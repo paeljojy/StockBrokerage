@@ -8,7 +8,6 @@ import requests
 
 class Server():
     cachedData = None
-    cachedData = None
     lastFetchTime = None
 
     def init(self):
