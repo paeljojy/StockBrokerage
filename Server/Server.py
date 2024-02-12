@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sqlite3
 import mariadb
-import datetime
+from datetime import datetime
 import time
 import requests
 
@@ -28,11 +28,11 @@ def hello_world():
 
 def resolveCachedData(server):
     data = server.getCachedData()
-    server.currentTime = datetime.datetime.now()
+    server.currentTime = datetime.now()
 
     # If we have cached data and it's less than an hour old, return it
-    # INFO: 3600 * 1000ms = 1 hour
-    if server.cachedData is not None and server.currentTime - (server.lastFetchTime) < 3600 * 1000:
+    # INFO: 3600s = 1 hour
+    if server.cachedData is not None and (server.currentTime - server.lastFetchTime).total_seconds() < 3600:
         return server.cachedData
 
     # Otherwise, fetch new data from REST API
@@ -40,7 +40,7 @@ def resolveCachedData(server):
     data = res.json()
 
     # Update the cache and the fetch time
-    cachedData = data
+    server.cachedData = data
     server.lastFetchTime = server.currentTime
 
     return data
