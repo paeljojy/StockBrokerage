@@ -39,7 +39,7 @@ export async function getDB(): Promise<any> {
 
 export async function getStocksFromServer(): Promise<any> {
     console.log("getStocks() called on frontend!");
-    const data = fetch('http://localhost:3000/api/stocks/apple')
+    const data = fetch('http://localhost:5000/api/stocks/apple')
         .then(response => response.json())
         .then(data => console.log(data));
     return data;
