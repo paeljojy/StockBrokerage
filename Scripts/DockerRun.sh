@@ -1,4 +1,4 @@
 #!/bin/bash
 
-docker run -p 8080:5173 stock_brokerage:latest
+docker run -p 5173:5173 stock_brokerage:latest
 
