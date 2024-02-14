@@ -1,0 +1,22 @@
+version: '3'
+services:
+  frontend:
+    build:
+      context: ./
+      dockerfile: docker/Client_Dockerfile 
+    volumes:
+      - './src:/app'
+    ports:
+      - '5173:5173'
+    command: ['npm', 'run', 'dev', '--host']
+
+  backend:
+    build:
+      context: ./
+      dockerfile: docker/Server_Dockerfile
+    volumes:
+      - './Server:/app'
+    ports:
+      - '5000:5000'
+    command: ['gunicorn', '-b', '0.0.0.0:5000', 'Server:Server']
+
