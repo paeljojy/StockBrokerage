@@ -1,7 +1,8 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
-    <p>Hello World!</p>
+    <h1>TJTS5901 Continuous Software Engineering</h1>
+    <h2>Group 7 - Patrik Jylhä, Janne Lahti, Jonna Helaakoski, Antti Kariluoto, Kaarlo Mahlberg</h2>
+    <p>This is our frontend implementation for the final project</p>
   </div>
 </template>
 
