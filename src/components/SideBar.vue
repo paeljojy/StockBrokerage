@@ -27,7 +27,12 @@
 				<!-- <span class="material-icons">description</span> -->
                 <a class="fas fa-circle-info" />
 				<span class="text">About</span>
-			</router-link>
+			</router-link>		
+			<router-link to="/test" class="button">
+				<!-- <span class="material-icons">description</span> -->
+                <a class="fas fa-circle-info" />
+				<span class="text">Testailualue</span>
+			</router-link>			
 		</div>
 
         <!-- INFO: Flex is used to push the settings button to the bottom of the sidebar -->

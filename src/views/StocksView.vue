@@ -3,6 +3,7 @@ import { getStocksFromServer } from '../stocks/StocksAPI.ts'
 import { getDB } from '../stocks/StocksAPI.ts'
 import { sendLogin } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
+/*import { ref } from 'vue';*/
 
 /* import { getDB } from '../stocks/Stocks.ts' */
 
@@ -32,7 +33,6 @@ export default {
         }
     }
 }
-
 </script>
 
 <template>
