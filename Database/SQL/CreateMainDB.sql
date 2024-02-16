@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS users;
 
 -- Create the user table
 CREATE TABLE users (
-	sub INTEGER NOT NULL,
+	sub TEXT NOT NULL,
 	email TEXT,
 	CONSTRAINT users_pk PRIMARY KEY (sub)
 );

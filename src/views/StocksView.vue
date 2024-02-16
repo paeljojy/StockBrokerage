@@ -13,12 +13,10 @@ export default {
             stocks: [],
             // This callback will be triggered when the user selects or login to
             // his Google account from the popup
-            callback: (response) => {
-                console.log("Logged In!");
-                console.log(decodeCredential(response.credential));
-            },
             db: [],
-            email: ''
+            email: '',
+            isUserLoggedIn: false,
+            userName: ''
         }
     },
     methods: {
@@ -30,7 +28,22 @@ export default {
         },
         async submit() {
             await sendLogin(this.email);
+        },
+        async callback(response) {
+            console.log("Logged In!");
+            /* console.log(decodeCredential(response.credential)); */
+            const credential = decodeCredential(response.credential);
+            this.email = credential.email;
+            this.userName = credential.name;
+            console.log("Email: " + this.email);
+            console.log("Name: " + this.userName);
+
+            sendLogin(decodeCredential(response.credential));
+            this.isUserLoggedIn = true;
         }
+    },
+    mounted() {
+        /* console.log("Google App ID: " + this.googleAppID); */
     }
 }
 </script>
@@ -40,11 +53,13 @@ export default {
         <h1>This is the stocks trading page</h1>
         <button @click="fetchStocks">Fetch Stocks</button>
         <button @click="get_database_data_from_server">Create DB</button>
+
+        <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button>
+        <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
     </div>
     <GoogleLogin :callback="callback" />
     <div>
         <input type="email" v-model="email" />
-
         <button @click="submit">Submit</button>
     </div>
 </template>

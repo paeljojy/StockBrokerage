@@ -5,12 +5,28 @@ from datetime import datetime
 import time
 import requests
 
+import os
+print("CWD IS: ", os.getcwd())
+
+class User:
+    def __init__(self, id, email):
+        self.id = id
+        self.email = email
+
+    def __hash__(self):
+        return hash((self.id, self.email))
+
+    def __eq__(self, other):
+        return (self.id, self.email) == (other.id, other.email)
+
 class Server():
     cachedData = None
     lastFetchTime = None
+    loggedInUsers = set()
 
     def init(self):
         self.cachedData = None
+        self.loggedInUsers = set(self.loggedInUsers)
 
     def getCachedData(self):
         return self.cachedData
@@ -48,7 +64,7 @@ def getStocks():
     data = resolveCachedData(server)
     return jsonify(data)
 
-@app.route('/getdb')
+@app.route('/api/getdb')
 def getdb():
     conn = sqlite3.connect('Database/Main.db')
     cursor = conn.execute("SELECT * FROM USERS")
@@ -59,17 +75,42 @@ def getdb():
     conn.close()
     return jsonify(list)
 
-@app.route('/sendlogin', methods=['POST'])
+
+# IǸFO: 
+@app.route('/api/login', methods=['POST'])
 def sendlogin():
     userEmail = request.form.get("email", "")
+    userSub = request.form.get("sub", "")
+
+    # Convert user sub string to int and back to string to remove possible sql injection
+    userSubNumber = int(userSub)
+    userSub = str(userSubNumber)
+
     print("received email:" + userEmail)
+    print("received sub:" + userSub)
     conn = sqlite3.connect('Database/Main.db')
-    cursor = conn.execute("SELECT * FROM USERS")
+
+    # Make prepared statement instead
+    cursor = conn.execute("SELECT * FROM USERS WHERE sub = ?", (userSub,))
+
     list = []
     for row in cursor:
         list.append(row)
+
+    if len(list) == 0:
+        cursor = conn.execute("INSERT INTO USERS (sub, email) VALUES (?, ?)", (userSub, userEmail))
+        succ = conn.commit()
+        cursor.close()
+        conn.close()
+
+        if succ:
+            server.loggedInUsers.add(User(userSub, userEmail))
+            return jsonify("success_newUser, login success: new user!")
+        return jsonify("error_newUser, login failed: new user error!")
+
     cursor.close()
     conn.close()
-    if len(list) == 1 and list[0][1] == userEmail:
-        return jsonify("db login success")
-    return jsonify("db login no match")
+
+    server.loggedInUsers.add(User(userSub, userEmail))
+    return jsonify("success_existingUser, login success: existing user!")
+    

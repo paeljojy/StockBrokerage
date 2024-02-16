@@ -45,14 +45,42 @@ export async function getStocksFromServer(): Promise<any> {
     return data;
 }
 
-export async function sendLogin(email): Promise<any> {
+export async function sendLogin(credential): Promise<any> {
     console.log("sendLogin() called on frontend!");
+    console.log(credential);
+
     const formData = new FormData();
-    formData.append('email', email);
-    const data = fetch("http://localhost:5000/sendlogin", {
+    formData.append('email', credential.email);
+    formData.append('sub', credential.sub);
+    const data = fetch("http://localhost:5000/api/login", {
         method: 'POST',
-        body: formData })
+        body: formData
+    })
         .then(response => response.json())
-        .then(data => console.log(data));
+        .then(data => {
+            console.log("Whole response: " + data);
+            const status = data.split(',')[0]
+            console.log("status is \"" + status + "\"");
+
+            switch (status) {
+                case "success_existingUser":
+                    {
+                        console.log("Login successful on existing user!"); break;
+                    }
+                case "success_newUser":
+                    {
+                        console.log("Login successful on new user!"); break;
+                    }
+                case "error_newUser":
+                    {
+                        console.log("Login failed on new user!"); break;
+                    }
+                case "error_existingUser":
+                    {
+                        console.log("Login failed on existing user!"); break;
+                    }
+            }
+        }
+        );
     return data;
 }
