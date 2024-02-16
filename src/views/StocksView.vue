@@ -1,6 +1,7 @@
 <script lang="ts">
 import { getStocksFromServer } from '../stocks/StocksAPI.ts'
 import { getDB } from '../stocks/StocksAPI.ts'
+import { sendLogin } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
 
 /* import { getDB } from '../stocks/Stocks.ts' */
@@ -15,7 +16,8 @@ export default {
                 console.log("Logged In!");
                 console.log(decodeCredential(response.credential));
             },
-            db: []
+            db: [],
+            email: ''
         }
     },
     methods: {
@@ -24,6 +26,9 @@ export default {
         },
         async get_database_data_from_server() {
             this.db = await getDB();
+        },
+        async submit() {
+            await sendLogin(this.email);
         }
     }
 }
@@ -37,6 +42,11 @@ export default {
         <button @click="get_database_data_from_server">Create DB</button>
     </div>
     <GoogleLogin :callback="callback" />
+    <div>
+        <input type="email" v-model="email" />
+
+        <button @click="submit">Submit</button>
+    </div>
 </template>
 
 <style>

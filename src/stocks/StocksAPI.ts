@@ -45,4 +45,14 @@ export async function getStocksFromServer(): Promise<any> {
     return data;
 }
 
-
+export async function sendLogin(email): Promise<any> {
+    console.log("sendLogin() called on frontend!");
+    const formData = new FormData();
+    formData.append('email', email);
+    const data = fetch("http://localhost:5000/sendlogin", {
+        method: 'POST',
+        body: formData })
+        .then(response => response.json())
+        .then(data => console.log(data));
+    return data;
+}

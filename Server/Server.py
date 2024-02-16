@@ -59,3 +59,17 @@ def getdb():
     conn.close()
     return jsonify(list)
 
+@app.route('/sendlogin', methods=['POST'])
+def sendlogin():
+    userEmail = request.form.get("email", "")
+    print("received email:" + userEmail)
+    conn = sqlite3.connect('Database/Main.db')
+    cursor = conn.execute("SELECT * FROM USERS")
+    list = []
+    for row in cursor:
+        list.append(row)
+    cursor.close()
+    conn.close()
+    if len(list) == 1 and list[0][1] == userEmail:
+        return jsonify("db login success")
+    return jsonify("db login no match")
