@@ -39,6 +39,11 @@
 		<div class="flex"></div>
 		
 		<div class="menu">
+			<router-link to="/myportf" class="button">
+				<!-- <span class="material-icons">settings</span> -->
+                <a class="fas fa-user" />
+				<span class="text">My Portfolio</span>
+			</router-link>
 			<router-link to="/settings" class="button">
 				<!-- <span class="material-icons">settings</span> -->
                 <a class="fas fa-gears" />
