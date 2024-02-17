@@ -98,15 +98,16 @@ def sendlogin():
         list.append(row)
 
     if len(list) == 0:
-        cursor = conn.execute("INSERT INTO USERS (sub, email) VALUES (?, ?)", (userSub, userEmail))
-        succ = conn.commit()
-        cursor.close()
-        conn.close()
-
-        if succ:
+        try:
+            cursor = conn.execute("INSERT INTO USERS (sub, email) VALUES (?, ?)", (userSub, userEmail))
+            succ = conn.commit()
             server.loggedInUsers.add(User(userSub, userEmail))
             return jsonify("success_newUser, login success: new user!")
-        return jsonify("error_newUser, login failed: new user error!")
+        except:
+            return jsonify("error_newUser, login failed: new user error!")
+        finally:
+            cursor.close()
+            conn.close()
 
     cursor.close()
     conn.close()
