@@ -45,6 +45,8 @@ export async function getStocksFromServer(): Promise<any> {
     return data;
 }
 
+// INFO: Sends a login request to the server and returns the response to the caller (most likely frontend)
+// @param credential: The user's email and sub
 export async function sendLogin(credential): Promise<any> {
     console.log("sendLogin() called on frontend!");
     console.log(credential);
@@ -65,7 +67,8 @@ export async function sendLogin(credential): Promise<any> {
             switch (status) {
                 case "success_existingUser":
                     {
-                        console.log("Login successful on existing user!"); break;
+                        console.log("Login successful on existing user!");
+                        return "teppo";
                     }
                 case "success_newUser":
                     {
@@ -79,6 +82,49 @@ export async function sendLogin(credential): Promise<any> {
                     {
                         console.log("Login failed on existing user!"); break;
                     }
+            }
+        }
+        );
+    return data;
+}
+
+// INFO: Sends a logout request to the server and returns the response to the caller (most likely frontend)
+// @param credential: The user's email and sub
+export async function sendLogout(credential): Promise<any> {
+    console.log("sendLogout() called on frontend!");
+    console.log(credential);
+
+    const formData = new FormData();
+    formData.append('email', credential.email);
+    formData.append('sub', credential.sub);
+    const data = fetch("http://localhost:5000/api/logout", {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Whole response: " + data);
+            const status = data.split(',')[0]
+            console.log("status is \"" + status + "\"");
+
+            switch (status) {
+                case "success_existingUser":
+                    {
+                        console.log("Logout successful on existing user!"); break;
+                    }
+                // FIXME: Handle logout errors
+                /* case "success_newUser": */
+                /*     { */
+                /*         console.log("Login successful on new user!"); break; */
+                /*     } */
+                /* case "error_newUser": */
+                /*     { */
+                /*         console.log("Login failed on new user!"); break; */
+                /*     } */
+                /* case "error_existingUser": */
+                /*     { */
+                /*         console.log("Login failed on existing user!"); break; */
+                /*     } */
             }
         }
         );

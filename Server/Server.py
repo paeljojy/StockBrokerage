@@ -76,7 +76,7 @@ def getdb():
     return jsonify(list)
 
 
-# IǸFO: 
+# INFO: Handles log in requests
 @app.route('/api/login', methods=['POST'])
 def sendlogin():
     userEmail = request.form.get("email", "")
@@ -114,4 +114,42 @@ def sendlogin():
 
     server.loggedInUsers.add(User(userSub, userEmail))
     return jsonify("success_existingUser, login success: existing user!")
+    
+# INFO: Handles log out requests
+# FIXME: User does not exist in loggedInUsers for some god knows what reason
+@app.route('/api/logout', methods=['POST'])
+def sendlogout():
+    userEmail = request.form.get("email", "")
+    userSub = request.form.get("sub", "")
+
+    if userSub not in server.loggedInUsers:
+        return jsonify("error_userNotLoggedIn, logout error: user is not logged in!")
+
+
+    # Convert user sub string to int and back to string to remove possible sql injection
+    userSubNumber = int(userSub)
+    userSub = str(userSubNumber)
+
+    print("received email:" + userEmail)
+    print("received sub:" + userSub)
+    conn = sqlite3.connect('Database/Main.db')
+
+    # Make prepared statement instead
+    cursor = conn.execute("SELECT * FROM USERS WHERE sub = ?", (userSub,))
+
+    list = []
+    for row in cursor:
+        list.append(row)
+
+    if len(list) == 0:
+        cursor.close()
+        conn.close()
+
+        return jsonify("error_userNotFound, logout error: no user found!")
+
+    cursor.close()
+    conn.close()
+
+    server.loggedInUsers.remove(User(userSub, userEmail))
+    return jsonify("success_existingUser, logout success: existing user!")
     

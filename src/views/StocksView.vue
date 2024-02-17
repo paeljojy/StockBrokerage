@@ -2,6 +2,7 @@
 import { getStocksFromServer } from '../stocks/StocksAPI.ts'
 import { getDB } from '../stocks/StocksAPI.ts'
 import { sendLogin } from '../stocks/StocksAPI.ts'
+import { sendLogout } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
 /*import { ref } from 'vue';*/
 
@@ -16,7 +17,8 @@ export default {
             db: [],
             email: '',
             isUserLoggedIn: false,
-            userName: ''
+            userName: '',
+            loginCredential: {}
         }
     },
     methods: {
@@ -26,8 +28,12 @@ export default {
         async get_database_data_from_server() {
             this.db = await getDB();
         },
-        async submit() {
-            await sendLogin(this.email);
+        async sendLogInRequest() {
+            await sendLogin(this.loginCredential);
+        },
+        async sendLogoutRequest() {
+            await sendLogout(this.loginCredential);
+            this.isUserLoggedIn = false; 
         },
         async callback(response) {
             console.log("Logged In!");
@@ -35,10 +41,12 @@ export default {
             const credential = decodeCredential(response.credential);
             this.email = credential.email;
             this.userName = credential.name;
+            this.loginCredential = credential;
             console.log("Email: " + this.email);
             console.log("Name: " + this.userName);
 
-            sendLogin(decodeCredential(response.credential));
+            const tepi = sendLogin(decodeCredential(response.credential));
+            console.log(tepi);
             this.isUserLoggedIn = true;
         }
     },
@@ -53,15 +61,18 @@ export default {
         <h1>This is the stocks trading page</h1>
         <button @click="fetchStocks">Fetch Stocks</button>
         <button @click="get_database_data_from_server">Create DB</button>
-
-        <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button>
-        <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
+        <!-- <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button> -->
     </div>
-    <GoogleLogin :callback="callback" />
+    <!-- FIXME: Some reason doesn't log out user on the backend, "no user found in logged in users" -->
     <div>
-        <input type="email" v-model="email" />
-        <button @click="submit">Submit</button>
+        <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
+        <button v-if="isUserLoggedIn" @click="sendLogoutRequest">Log out</button>
+        <GoogleLogin :callback="callback" v-if="!isUserLoggedIn"/>
     </div>
+    <!-- <div> -->
+    <!--     <input type="sendLogInRequest" v-model="email" /> -->
+    <!--     <button @click="sendLogInRequest">Log in</button> -->
+    <!-- </div> -->
 </template>
 
 <style>
