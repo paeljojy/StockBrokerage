@@ -58,47 +58,47 @@ export default {
 
 <template>
     <div class="app-container">
-      <div class="stock-container">
-        <header>
-            <h1>Apple, Inc (AAPL)</h1>
-            <div class="price">Loading...</div>
-        </header>
-        <section class="chart">
-          <!-- CHART -->
-        </section>
-        <div class="trade-controls">
-            <div class="input-group">
-                <label for="amount">AMOUNT</label>
-                <input type="number" id="amount" min="0" class="trade-input">
-            </div>
-            <div class="input-group">
-                <label for="price">PRICE</label>
-                <input type="number" id="price" min="0" class="trade-input">
-            </div>
-            <div class="button-group">
-                <button class="trade-btn bid">BID</button>
-                <button class="trade-btn sell">SELL</button>
+        <div class="stock-container">
+            <header>
+                <h1>Apple, Inc (AAPL)</h1>
+                <div class="price">Loading...</div>
+            </header>
+            <section class="chart">
+                <!-- CHART -->
+            </section>
+            <div class="trade-controls">
+                <div class="input-group">
+                    <label for="amount">AMOUNT</label>
+                    <input type="number" id="amount" min="0" class="trade-input">
+                </div>
+                <div class="input-group">
+                    <label for="price">PRICE</label>
+                    <input type="number" id="price" min="0" class="trade-input">
+                </div>
+                <div class="button-group">
+                    <button class="trade-btn bid">BID</button>
+                    <button class="trade-btn sell">SELL</button>
+                </div>
             </div>
         </div>
-      </div>
-      <div class="stocks">
-        <h1>This is the stocks trading page</h1>
-        <button @click="fetchStocks">Fetch Stocks</button>
-        <button @click="get_database_data_from_server">Create DB</button>
-        <!-- <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button> -->
+        <div class="stocks">
+            <h1>This is the stocks trading page</h1>
+            <button @click="fetchStocks">Fetch Stocks</button>
+            <button @click="get_database_data_from_server">Fetch Users from DB</button>
+            <!-- <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button> -->
+        </div>
+        <!-- FIXME: Some reason doesn't log out user on the backend, "no user found in logged in users" -->
+        <div>
+            <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
+            <button v-if="isUserLoggedIn" @click="sendLogoutRequest">Log out</button>
+            <GoogleLogin :callback="callback" v-if="!isUserLoggedIn"/>
+        </div>
+        <!-- <div> -->
+        <!--     <input type="sendLogInRequest" v-model="email" /> -->
+        <!--     <button @click="sendLogInRequest">Log in</button> -->
+        <!-- </div> -->
     </div>
-    <!-- FIXME: Some reason doesn't log out user on the backend, "no user found in logged in users" -->
-    <div>
-        <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
-        <button v-if="isUserLoggedIn" @click="sendLogoutRequest">Log out</button>
-        <GoogleLogin :callback="callback" v-if="!isUserLoggedIn"/>
-    </div>
-    <!-- <div> -->
-    <!--     <input type="sendLogInRequest" v-model="email" /> -->
-    <!--     <button @click="sendLogInRequest">Log in</button> -->
-    <!-- </div> -->
-    </div>
-  </template>
+</template>
 
 <style>
 @media (min-width: 1024px) {
