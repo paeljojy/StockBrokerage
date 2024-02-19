@@ -85,8 +85,18 @@ export default {
         <h1>This is the stocks trading page</h1>
         <button @click="fetchStocks">Fetch Stocks</button>
         <button @click="get_database_data_from_server">Create DB</button>
-      </div>
-      <GoogleLogin :callback="callback" />
+        <!-- <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button> -->
+    </div>
+    <!-- FIXME: Some reason doesn't log out user on the backend, "no user found in logged in users" -->
+    <div>
+        <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
+        <button v-if="isUserLoggedIn" @click="sendLogoutRequest">Log out</button>
+        <GoogleLogin :callback="callback" v-if="!isUserLoggedIn"/>
+    </div>
+    <!-- <div> -->
+    <!--     <input type="sendLogInRequest" v-model="email" /> -->
+    <!--     <button @click="sendLogInRequest">Log in</button> -->
+    <!-- </div> -->
     </div>
   </template>
 
