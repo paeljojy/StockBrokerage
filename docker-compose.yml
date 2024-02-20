@@ -9,6 +9,7 @@ services:
     ports:
       - '5173:5173'
     command: ['npm', 'run', 'dev', '--host']
+    image: stock-brokerage-client
 
   backend:
     build:
@@ -19,4 +20,5 @@ services:
     ports:
       - '5000:5000'
     command: ['gunicorn', '-b', '0.0.0.0:5000', 'Server:Server']
+    image: stock-brokerage-server
 

@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-brokerage-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: stock-brokerage-frontend
+  template:
+    metadata:
+      labels:
+        app: stock-brokerage-frontend
+    spec:
+      containers:
+      - name: stock-brokerage-frontend
+        image: stock-brokerage-client:latest
+        resources:
+          limits:
+            cpu: "1"
+            memory: "500Mi"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5173
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: stock-brokerage-backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: stock-brokerage-backend
+  template:
+    metadata:
+      labels:
+        app: stock-brokerage-backend
+    spec:
+      containers:
+      - name: stock-brokerage-backend
+        image: stock-brokerage-server:latest
+        imagePullPolicy: IfNotPresent
+        resources:
+          limits:
+            cpu: "1"
+            memory: "500Mi"
+        ports:
+        - containerPort: 5000
