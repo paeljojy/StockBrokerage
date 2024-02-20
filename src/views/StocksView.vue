@@ -18,7 +18,9 @@ export default {
             email: '',
             isUserLoggedIn: false,
             userName: '',
-            loginCredential: {}
+            loginCredential: {},
+            amount: 0,
+            price: 0
         }
     },
     methods: {
@@ -48,6 +50,20 @@ export default {
             const tepi = sendLogin(decodeCredential(response.credential));
             console.log(tepi);
             this.isUserLoggedIn = true;
+        },
+        saveBid() {
+            const bidData = {
+              amount: this.amount,
+              price: this.price
+            };
+            console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
+        },
+        saveSell() {
+            const sellData = {
+              amount: this.amount,
+              price: this.price
+            };
+            console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
         }
     },
     mounted() {
@@ -69,15 +85,15 @@ export default {
             <div class="trade-controls">
                 <div class="input-group">
                     <label for="amount">AMOUNT</label>
-                    <input type="number" id="amount" min="0" class="trade-input">
+                    <input type="number" id="amount" min="0" class="trade-input" v-model.number="amount">
                 </div>
                 <div class="input-group">
                     <label for="price">PRICE</label>
-                    <input type="number" id="price" min="0" class="trade-input">
+                    <input type="number" id="price" min="0" class="trade-input" step="0.01" v-model.number="price">
                 </div>
                 <div class="button-group">
-                    <button class="trade-btn bid">BID</button>
-                    <button class="trade-btn sell">SELL</button>
+                    <button class="trade-btn bid" @click="saveBid">BID</button>
+                    <button class="trade-btn sell" @click="saveSell">SELL</button>
                 </div>
             </div>
         </div>
