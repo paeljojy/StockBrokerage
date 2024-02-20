@@ -90,6 +90,7 @@ export default {
                 <div class="input-group">
                     <label for="price">PRICE</label>
                     <input type="number" id="price" min="0" class="trade-input" step="0.01" v-model.number="price">
+                    <!-- FIXME: price with two decimal-->
                 </div>
                 <div class="button-group">
                     <button class="trade-btn bid" @click="saveBid">BID</button>
