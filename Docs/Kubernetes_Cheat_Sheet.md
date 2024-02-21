@@ -49,5 +49,7 @@ kubectl patch deployment stock-brokerage1 -p '{"spec": {"template": {"spec": {"c
 
 kubectl patch deployment stock-brokerage2 -p '{"spec": {"template": {"spec": {"containers": [{"name": "stock-brokerage-client", "imagePullPolicy": "IfNotPresent"}]}}}}'
 
+# delete deployment
+kubectl delete -n default deployment hello-minikube
 
 ```
