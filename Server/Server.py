@@ -8,6 +8,16 @@ import requests
 import os
 print("CWD IS: ", os.getcwd())
 
+class Bid:
+    def __init__(self, id, user):
+        self.id = id
+        self.user = user
+
+class SellOffer:
+    def __init__(self, id, user):
+        self.id = id
+        self.user = user
+
 class User:
     def __init__(self, id, email):
         self.id = id
@@ -18,6 +28,13 @@ class User:
 
     def __eq__(self, other):
         return (self.id, self.email) == (other.id, other.email)
+
+    @staticmethod
+    def get_user_by_id(users, id):
+        for user in users:
+            if user.id == id:
+                return user
+        return None  # Return None if no user with the given id is found
 
 class Server():
     cachedData = None
@@ -86,8 +103,8 @@ def sendlogin():
     userSubNumber = int(userSub)
     userSub = str(userSubNumber)
 
-    print("received email:" + userEmail)
-    print("received sub:" + userSub)
+    print("Received email:" + userEmail)
+    print("Received sub:" + userSub)
     conn = sqlite3.connect('Database/Main.db')
 
     # Make prepared statement instead
@@ -101,7 +118,7 @@ def sendlogin():
         try:
             cursor = conn.execute("INSERT INTO USERS (sub, email) VALUES (?, ?)", (userSub, userEmail))
             succ = conn.commit()
-            server.loggedInUsers.add(User(userSub, userEmail))
+            server.loggedInUsers.add(User(userSubNumber, userEmail))
             return jsonify("success_newUser, login success: new user!")
         except:
             return jsonify("error_newUser, login failed: new user error!")
@@ -112,7 +129,7 @@ def sendlogin():
     cursor.close()
     conn.close()
 
-    server.loggedInUsers.add(User(userSub, userEmail))
+    server.loggedInUsers.add(User(userSubNumber, userEmail))
     return jsonify("success_existingUser, login success: existing user!")
     
 # INFO: Handles log out requests
@@ -122,16 +139,18 @@ def sendlogout():
     userEmail = request.form.get("email", "")
     userSub = request.form.get("sub", "")
 
-    if userSub not in server.loggedInUsers:
+    # Convert user sub string to int 
+    userSubNumber = int(userSub)
+
+    # Check if user is actually still logged in
+    if userSubNumber != User.get_user_by_id(server.loggedInUsers, userSubNumber).id:
         return jsonify("error_userNotLoggedIn, logout error: user is not logged in!")
 
-
-    # Convert user sub string to int and back to string to remove possible sql injection
-    userSubNumber = int(userSub)
+    # Convert back to string to remove possible sql injection
     userSub = str(userSubNumber)
 
-    print("received email:" + userEmail)
-    print("received sub:" + userSub)
+    print("Received email:" + userEmail)
+    print("Received sub:" + userSub)
     conn = sqlite3.connect('Database/Main.db')
 
     # Make prepared statement instead
@@ -150,6 +169,6 @@ def sendlogout():
     cursor.close()
     conn.close()
 
-    server.loggedInUsers.remove(User(userSub, userEmail))
+    server.loggedInUsers.remove(User(userSubNumber, userEmail))
     return jsonify("success_existingUser, logout success: existing user!")
     

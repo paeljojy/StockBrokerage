@@ -34,8 +34,8 @@ export default {
             await sendLogin(this.loginCredential);
         },
         async sendLogoutRequest() {
-            await sendLogout(this.loginCredential);
-            this.isUserLoggedIn = false; 
+            const loggedOutSuccessFully = await sendLogout(this.loginCredential);
+            this.isUserLoggedIn = !loggedOutSuccessFully;
         },
         async callback(response) {
             console.log("Logged In!");
@@ -51,14 +51,14 @@ export default {
             console.log(tepi);
             this.isUserLoggedIn = true;
         },
-        saveBid() {
+        requestBidAddition() {
             const bidData = {
               amount: this.amount,
               price: this.price
             };
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
         },
-        saveSell() {
+        requestSellAddition() {
             const sellData = {
               amount: this.amount,
               price: this.price
@@ -90,11 +90,11 @@ export default {
                 <div class="input-group">
                     <label for="price">PRICE</label>
                     <input type="number" id="price" min="0" class="trade-input" step="0.01" v-model.number="price">
-                    <!-- FIXME: price with two decimal-->
+                    <!-- FIXME: Make sure the price input uses two decimals -->
                 </div>
                 <div class="button-group">
-                    <button class="trade-btn bid" @click="saveBid">BID</button>
-                    <button class="trade-btn sell" @click="saveSell">SELL</button>
+                    <button class="trade-btn bid" @click="requestBidAddition">BID</button>
+                    <button class="trade-btn sell" @click="requestSellAddition">SELL</button>
                 </div>
             </div>
         </div>
@@ -104,10 +104,9 @@ export default {
             <button @click="get_database_data_from_server">Fetch Users from DB</button>
             <!-- <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button> -->
         </div>
-        <!-- FIXME: Some reason doesn't log out user on the backend, "no user found in logged in users" -->
         <div>
             <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
-            <button v-if="isUserLoggedIn" @click="sendLogoutRequest">Log out</button>
+            <button @click="sendLogoutRequest" v-if="isUserLoggedIn">Log out</button>
             <GoogleLogin :callback="callback" v-if="!isUserLoggedIn"/>
         </div>
         <!-- <div> -->

@@ -90,6 +90,7 @@ export async function sendLogin(credential): Promise<any> {
 
 // INFO: Sends a logout request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
+// @return: true if the logout was successful, false otherwise
 export async function sendLogout(credential): Promise<any> {
     console.log("sendLogout() called on frontend!");
     console.log(credential);
@@ -110,7 +111,8 @@ export async function sendLogout(credential): Promise<any> {
             switch (status) {
                 case "success_existingUser":
                     {
-                        console.log("Logout successful on existing user!"); break;
+                        console.log("Logout successful on existing user!"); 
+                        return true;
                     }
                 // FIXME: Handle logout errors
                 /* case "success_newUser": */

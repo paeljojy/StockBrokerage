@@ -1,4 +1,8 @@
-// copy paste this to https://dbdiagram.io/d
+# Database diagram
+Copy paste this to [dbdiagram](https://dbdiagram.io/d)
+(without ``` ``` obviously)
+
+```
 
 Table users {
   id integer [primary key]
@@ -66,3 +70,5 @@ Ref: stocks.id - bids.stock_id
 Ref: stocks.id - offers.stock_id
 
 Ref: stocks.id - trades.stock_id
+
+```
