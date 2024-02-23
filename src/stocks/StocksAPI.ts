@@ -54,7 +54,7 @@ export async function sendLogin(credential): Promise<any> {
     const formData = new FormData();
     formData.append('email', credential.email);
     formData.append('sub', credential.sub);
-    const data = fetch("http://localhost:5000/api/login", {
+    const data = fetch("http://localhost:5000/api/auth/login", {
         method: 'POST',
         body: formData
     })
@@ -98,7 +98,7 @@ export async function sendLogout(credential): Promise<any> {
     const formData = new FormData();
     formData.append('email', credential.email);
     formData.append('sub', credential.sub);
-    const data = fetch("http://localhost:5000/api/logout", {
+    const data = fetch("http://localhost:5000/api/auth/logout", {
         method: 'POST',
         body: formData
     })
@@ -111,7 +111,59 @@ export async function sendLogout(credential): Promise<any> {
             switch (status) {
                 case "success_existingUser":
                     {
-                        console.log("Logout successful on existing user!"); 
+                        console.log("Logout successful on existing user!");
+                        return true;
+                    }
+                // FIXME: Handle logout errors
+                /* case "success_newUser": */
+                /*     { */
+                /*         console.log("Login successful on new user!"); break; */
+                /*     } */
+                /* case "error_newUser": */
+                /*     { */
+                /*         console.log("Login failed on new user!"); break; */
+                /*     } */
+                /* case "error_existingUser": */
+                /*     { */
+                /*         console.log("Login failed on existing user!"); break; */
+                /*     } */
+            }
+        }
+        );
+    return data;
+}
+
+// INFO: Sends a logout request to the server and returns the response to the caller (most likely frontend)
+// @param credential: The user's email and sub
+export async function sendBidAdditionRequest(credential, bidData): Promise<any> {
+    console.log("sendBidAdditionRequest() called on frontend!");
+    console.log(credential);
+
+    const formData = new FormData();
+    // FIXME: we don't really need to send the email here, the sub (used as user id) is enough
+    formData.append('email', credential.email);
+    formData.append('sub', credential.sub);
+    // INFO: We can't send the bidData object as is, so we need to send the individual fields
+    /* formData.append('bidData.id', bidData.id); // INFO:Setting the id is done on the server */
+    formData.append('bidData.user_id', bidData.user_id);
+    formData.append('bidData.stock_id', bidData.stock_id);
+    formData.append('bidData.amount', bidData.amount);
+    formData.append('bidData.price', bidData.price);
+
+    const data = fetch("http://localhost:5000/api/stocks/bid", {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Whole response: " + data);
+            const status = data.split(',')[0]
+            console.log("status is \"" + status + "\"");
+
+            switch (status) {
+                case "success_existingUser":
+                    {
+                        console.log("Able to add bid on existing user!");
                         return true;
                     }
                 // FIXME: Handle logout errors

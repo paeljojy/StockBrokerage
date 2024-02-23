@@ -3,6 +3,7 @@ import { getStocksFromServer } from '../stocks/StocksAPI.ts'
 import { getDB } from '../stocks/StocksAPI.ts'
 import { sendLogin } from '../stocks/StocksAPI.ts'
 import { sendLogout } from '../stocks/StocksAPI.ts'
+import { sendBidAdditionRequest } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
 /*import { ref } from 'vue';*/
 
@@ -20,7 +21,13 @@ export default {
             userName: '',
             loginCredential: {},
             amount: 0,
-            price: 0
+            price: 0,
+            // TODO: Query these from the server when we open the stock page
+            currentStock: {
+                id: 1,
+                name: 'Apple, Inc (AAPL)',
+                price: 69.69
+            }
         }
     },
     methods: {
@@ -53,10 +60,15 @@ export default {
         },
         requestBidAddition() {
             const bidData = {
-              amount: this.amount,
-              price: this.price
+                // INFO: We are not setting the bid id here, 
+                // because the server will determine that as the bid is actually being added
+                user_id : this.loginCredential.sub,
+                stock_id : this.currentStock.id,
+                amount : this.amount,
+                price : this.price
             };
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
+            sendBidAdditionRequest(this.loginCredential, bidData);
         },
         requestSellAddition() {
             const sellData = {

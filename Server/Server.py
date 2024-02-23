@@ -9,9 +9,14 @@ import os
 print("CWD IS: ", os.getcwd())
 
 class Bid:
-    def __init__(self, id, user):
-        self.id = id
-        self.user = user
+    # TODO: Query the database for the next available id
+    # and use it as the id of the bid
+    def __init__(self, id, user_id, stock_id, amount, price):
+        self.id = id # INFO: this is id of the bid, NOT THE USER
+        self.user_id = user_id
+        self.stock_id = stock_id
+        self.amount = amount
+        self.price = price
 
 class SellOffer:
     def __init__(self, id, user):
@@ -45,8 +50,25 @@ class Server():
         self.cachedData = None
         self.loggedInUsers = set(self.loggedInUsers)
 
+
     def getCachedData(self):
         return self.cachedData
+
+    @staticmethod
+    def queryNextBidId():
+        # Query the database for the next available bid id
+        # INFO: This is used to add new bids to the database, as the user can have multiple bids
+        conn = sqlite3.connect('Database/Main.db')
+        cursor = conn.execute("SELECT * FROM SQLITE_SEQUENCE WHERE name = 'bids'")
+        bids = []
+        for row in cursor:
+            bids.append(row)
+
+        cursor.close()
+        conn.close()
+
+        # TODO: (Pate) Debug this
+        return len(bids) + 1
 
 server = Server()
 
@@ -81,6 +103,18 @@ def getStocks():
     data = resolveCachedData(server)
     return jsonify(data)
 
+# INFO: Rest api for getting all the made trades
+@app.route('/api/stocks/public/trades')
+def getTrades():
+    conn = sqlite3.connect('Database/Main.db')
+    cursor = conn.execute("SELECT * FROM trades")
+    trades = []
+    for row in cursor:
+        trades.append(row)
+    cursor.close()
+    conn.close()
+    return jsonify(trades)
+
 @app.route('/api/getdb')
 def getdb():
     conn = sqlite3.connect('Database/Main.db')
@@ -92,9 +126,8 @@ def getdb():
     conn.close()
     return jsonify(list)
 
-
 # INFO: Handles log in requests
-@app.route('/api/login', methods=['POST'])
+@app.route('/api/auth/login', methods=['POST'])
 def sendlogin():
     userEmail = request.form.get("email", "")
     userSub = request.form.get("sub", "")
@@ -117,10 +150,11 @@ def sendlogin():
     if len(list) == 0:
         try:
             cursor = conn.execute("INSERT INTO USERS (sub, email) VALUES (?, ?)", (userSub, userEmail))
-            succ = conn.commit()
+            conn.commit()
             server.loggedInUsers.add(User(userSubNumber, userEmail))
             return jsonify("success_newUser, login success: new user!")
         except:
+            print("error_newUser, login failed: new user error! database doesn't most likely exists on disk")
             return jsonify("error_newUser, login failed: new user error!")
         finally:
             cursor.close()
@@ -133,8 +167,7 @@ def sendlogin():
     return jsonify("success_existingUser, login success: existing user!")
     
 # INFO: Handles log out requests
-# FIXME: User does not exist in loggedInUsers for some god knows what reason
-@app.route('/api/logout', methods=['POST'])
+@app.route('/api/auth/logout', methods=['POST'])
 def sendlogout():
     userEmail = request.form.get("email", "")
     userSub = request.form.get("sub", "")
@@ -171,4 +204,66 @@ def sendlogout():
 
     server.loggedInUsers.remove(User(userSubNumber, userEmail))
     return jsonify("success_existingUser, logout success: existing user!")
+    
+# INFO: Handles bid addition requests from the client
+@app.route('/api/stocks/bid', methods=['POST'])
+def handleBidAddition():
+    userEmail = request.form.get("email", "")
+    userSub = request.form.get("sub", "")
+
+    # Convert user sub string to int
+    userSubNumber = int(userSub) # INFO: This is used as the user id
+
+    # Check if user is actually still logged in
+    # BUG: Currently, the frontend allows the user to easily attempt adding bids without logging in
+    # which is not wanted, we want the user to log in first before we allow them to place bids, 
+    # as we wouldn't be able to recognize who is making the bids otherwise
+    if userSubNumber != User.get_user_by_id(server.loggedInUsers, userSubNumber).id:
+        return jsonify("error_userNotLoggedIn, bid addition error: user is not logged in!")
+
+    # print("User id of the bid is: {}".format(userSub))
+    # User is surely logged in: Parse all the fields (of the bid) from the request form
+    user_id = request.form.get("bidData.user_id", "")
+    stock_id = request.form.get("bidData.stock_id", "")
+    amount = request.form.get("bidData.amount", "")
+    price = request.form.get("bidData.price", "")
+
+    # TODO: Query next id from the database
+    newBid = Bid(Server.queryNextBidId(), user_id, stock_id, amount, price)
+
+    # Convert back to string to remove possible sql injection
+    userSub = str(userSubNumber)
+
+    print("Handling bid addition for:")
+    print("Received email:" + userEmail)
+    print("Received sub:" + userSub)
+
+    # print("DATA: {}".format(request.form))
+    print("BID DATA: \n==============\n\nuser_id: \
+            {}\nstock_id: {}\namount: {}\nprice: {}\n==============".\
+            format(newBid.user_id, newBid.stock_id, newBid.amount, newBid.price))
+
+    # TODO: Investigate: does sqlite3 have a connection limit similar to MySQL/MariaDB or is just the
+    # OS concurrent file read limit
+    conn = sqlite3.connect('Database/Main.db')
+    cursor = conn.execute("INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newBid.id, newBid.user_id, newBid.stock_id, newBid.amount, newBid.price))
+
+    # Make prepared statement instead of using raw sql
+    try:
+        conn.commit()
+    except:
+        cursor.close()
+        conn.close()
+        return jsonify("error_bidAddition, Bid addition error: failed to add bid to the database!")
+    finally:
+        cursor.close()
+        conn.close()
+
+    # TODO:Depending on what limits we have on the database we might want to keep connections open per logged in user 
+    # for performance reasons, closing a connection on a sql database is usually somewhat a costly operation so this
+    # might also be the case when using sqlite
+    cursor.close()
+    conn.close()
+
+    return jsonify("success_bidAdded, Bid addition success: existing user added a bid!")
     
