@@ -94,7 +94,7 @@ export default {
             <section class="chart">
                 <!-- CHART -->
             </section>
-            <div class="trade-controls">
+            <div class="trade-controls" v-if="isUserLoggedIn">
                 <div class="input-group">
                     <label for="amount">AMOUNT</label>
                     <input type="number" id="amount" min="0" class="trade-input" v-model.number="amount">
