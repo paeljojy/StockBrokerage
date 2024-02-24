@@ -54,15 +54,26 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import logoURL from '../assets/logo.svg'
 
 const is_expanded = ref(localStorage.getItem("is_expanded") === "true")
 
+const setSidebarWidth = () => {
+  const mainContainerMargin = is_expanded.value ? '9.5rem' : '3.5rem';
+  document.documentElement.style.setProperty('--sidebar-current-width', mainContainerMargin);
+};
+
 const ToggleMenu = () => {
-	is_expanded.value = !is_expanded.value
-	localStorage.setItem("is_expanded", String(is_expanded.value))
-}
+  is_expanded.value = !is_expanded.value;
+  localStorage.setItem("is_expanded", String(is_expanded.value));
+  setSidebarWidth();
+};
+
+onMounted(() => {
+  setSidebarWidth();
+});
+
 </script>
 
 <style lang="scss" scoped>
@@ -88,6 +99,8 @@ aside {
 	padding: 1rem;
 
 	transition: 0.2s ease-in-out;
+
+	position: fixed;
 
 	.flex {
 		flex: 1 1 0%;

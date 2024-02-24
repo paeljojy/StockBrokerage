@@ -32,6 +32,7 @@ import Sidebar from './components/SideBar.vue'
 <style scoped>
 #main-container {
   flex-grow: 1;
+  margin-left: var(--sidebar-current-width);
 }
 
 header {
