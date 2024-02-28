@@ -11,10 +11,8 @@
 
 <script lang="ts">
 
-import DialogTemplate from '../components/DialogTemplate.vue'
 export default {
-  name: 'App',
-  components: { DialogTemplate }
+  name: 'App'
 }
 </script>
 <style scoped>

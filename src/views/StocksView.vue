@@ -58,6 +58,9 @@ export default {
             console.log(tepi);
             this.isUserLoggedIn = true;
         },
+        formatPrice() {
+            this.price = parseFloat(this.price.toFixed(2)); // Rounds to nearest (up to) 2 decimals
+        },
         requestBidAddition() {
             const bidData = {
                 // INFO: We are not setting the bid id here, 
@@ -101,8 +104,7 @@ export default {
                 </div>
                 <div class="input-group">
                     <label for="price">PRICE</label>
-                    <input type="number" id="price" min="0" class="trade-input" step="0.01" v-model.number="price">
-                    <!-- FIXME: Make sure the price input uses two decimals -->
+                    <input type="number" id="price" min="0" class="trade-input" step="0.01" v-model.number="price" @blur="formatPrice">
                 </div>
                 <div class="button-group">
                     <button class="trade-btn bid" @click="requestBidAddition">BID</button>
