@@ -59,16 +59,19 @@ class Server():
         # Query the database for the next available bid id
         # INFO: This is used to add new bids to the database, as the user can have multiple bids
         conn = sqlite3.connect('Database/Main.db')
-        cursor = conn.execute("SELECT * FROM SQLITE_SEQUENCE WHERE name = 'bids'")
-        bids = []
-        for row in cursor:
-            bids.append(row)
+        cursor = conn.execute("SELECT MAX(id) FROM bids")
 
-        cursor.close()
-        conn.close()
+        # Determine the next id to be used as an bid id (row id)
+        last_id = cursor.fetchone()[0]
+        print("Last id: ", last_id)
+        next_id = 1 if last_id is None else last_id + 1
+        print("Next id: ", next_id)
 
-        # TODO: (Pate) Debug this
-        return len(bids) + 1
+        # Clean up
+        # cursor.close()
+        # conn.close()
+
+        return next_id
 
 server = Server()
 
@@ -239,7 +242,7 @@ def handleBidAddition():
     print("Received sub:" + userSub)
 
     # print("DATA: {}".format(request.form))
-    print("BID DATA: \n==============\n\nuser_id: \
+    print("\nBID DATA: \n==============\nuser_id: \
             {}\nstock_id: {}\namount: {}\nprice: {}\n==============".\
             format(newBid.user_id, newBid.stock_id, newBid.amount, newBid.price))
 
@@ -259,11 +262,9 @@ def handleBidAddition():
         cursor.close()
         conn.close()
 
-    # TODO:Depending on what limits we have on the database we might want to keep connections open per logged in user 
+    # TODO: Depending on what limits we have on the database we might want to keep connections open per logged in user 
     # for performance reasons, closing a connection on a sql database is usually somewhat a costly operation so this
     # might also be the case when using sqlite
-    cursor.close()
-    conn.close()
 
     return jsonify("success_bidAdded, Bid addition success: existing user added a bid!")
     
