@@ -22,6 +22,12 @@ export default {
             loginCredential: {},
             amount: 0,
             price: 0,
+            bidData: {
+                user_id: 0,
+                stock_id: 0,
+                amount: 0,
+                price: 0
+            },
             // TODO: Query these from the server when we open the stock page
             currentStock: {
                 id: 1,
@@ -61,17 +67,21 @@ export default {
         formatPrice() {
             this.price = parseFloat(this.price.toFixed(2)); // Rounds to nearest (up to) 2 decimals
         },
-        requestBidAddition() {
-            const bidData = {
+        async requestBidAddition() {
+            /*const bidData = {
                 // INFO: We are not setting the bid id here, 
                 // because the server will determine that as the bid is actually being added
                 user_id : this.loginCredential.sub,
                 stock_id : this.currentStock.id,
                 amount : this.amount,
                 price : this.price
-            };
+            }; */
+            this.bidData.user_id = this.loginCredential.sub;
+            this.bidData.stock_id = this.currentStock.id;
+            this.bidData.amount = this.amount;
+            this.bidData.price = this.price;
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
-            sendBidAdditionRequest(this.loginCredential, bidData);
+            sendBidAdditionRequest(this.loginCredential, this.bidData);
         },
         requestSellAddition() {
             const sellData = {
@@ -128,6 +138,13 @@ export default {
         <!--     <button @click="sendLogInRequest">Log in</button> -->
         <!-- </div> -->
     </div>
+    <div v-if="isUserLoggedIn">
+            <h2>Bid Data</h2>
+            <p>User ID: {{ bidData.user_id }}</p>
+            <p>Stock ID: {{ bidData.stock_id }}</p>
+            <p>Amount: {{ bidData.amount }}</p>
+            <p>Price: {{ bidData.price }}</p>
+        </div>
 </template>
 
 <style>
