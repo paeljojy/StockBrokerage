@@ -28,6 +28,12 @@ export default {
                 amount: 0,
                 price: 0
             },
+            bidDataList: [] as {
+            user_id: number;
+            stock_id: number;
+            amount: number;
+            price: number;
+            }[],
             // TODO: Query these from the server when we open the stock page
             currentStock: {
                 id: 1,
@@ -76,12 +82,26 @@ export default {
                 amount : this.amount,
                 price : this.price
             }; */
+            /*
             this.bidData.user_id = this.loginCredential.sub;
             this.bidData.stock_id = this.currentStock.id;
             this.bidData.amount = this.amount;
             this.bidData.price = this.price;
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
             sendBidAdditionRequest(this.loginCredential, this.bidData);
+            this.bidDataList.push(this.bidData);
+            console.log(this.bidDataList); */
+            const newBidData = {
+                user_id: this.loginCredential.sub,
+                stock_id: this.currentStock.id,
+                amount: this.amount,
+                price: this.price
+            };
+
+            console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
+            sendBidAdditionRequest(this.loginCredential, newBidData);
+            this.bidDataList.push({ ...newBidData });
+            console.log(this.bidDataList);
         },
         requestSellAddition() {
             const sellData = {
@@ -139,12 +159,16 @@ export default {
         <!-- </div> -->
     </div>
     <div v-if="isUserLoggedIn">
-            <h2>Bid Data</h2>
-            <p>User ID: {{ bidData.user_id }}</p>
-            <p>Stock ID: {{ bidData.stock_id }}</p>
-            <p>Amount: {{ bidData.amount }}</p>
-            <p>Price: {{ bidData.price }}</p>
-        </div>
+    <h2>Bid Data</h2>
+    <!-- Display each bidData item -->
+    <div v-for="(bidDataItem, index) in bidDataList" :key="index">
+        <p>User ID: {{ bidDataItem.user_id }}</p>
+        <p>Stock ID: {{ bidDataItem.stock_id }}</p>
+        <p>Amount: {{ bidDataItem.amount }}</p>
+        <p>Price: {{ bidDataItem.price }}</p>
+        <hr>
+    </div>
+</div>
 </template>
 
 <style>
