@@ -165,8 +165,9 @@ export async function sendLogout(credential): Promise<any> {
     return data;
 }
 
-// INFO: Sends a logout request to the server and returns the response to the caller (most likely frontend)
+// INFO: Sends a bid addition request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
+// @param bidData: Added bid data
 export async function sendBidAdditionRequest(credential, bidData): Promise<any> {
     console.log("sendBidAdditionRequest() called on frontend!");
     console.log(credential);
@@ -196,6 +197,59 @@ export async function sendBidAdditionRequest(credential, bidData): Promise<any> 
                 case "success_existingUser":
                     {
                         console.log("Able to add bid on existing user!");
+                        return true;
+                    }
+                // FIXME: Handle logout errors
+                /* case "success_newUser": */
+                /*     { */
+                /*         console.log("Login successful on new user!"); break; */
+                /*     } */
+                /* case "error_newUser": */
+                /*     { */
+                /*         console.log("Login failed on new user!"); break; */
+                /*     } */
+                /* case "error_existingUser": */
+                /*     { */
+                /*         console.log("Login failed on existing user!"); break; */
+                /*     } */
+            }
+        }
+        );
+    return data;
+}
+
+// INFO: Sends a sell addition request to the server and returns the response to the caller (most likely frontend)
+// @param credential: The user's email and sub
+// @param sellData: Added sell data
+export async function sendSellAdditionRequest(credential, sellData): Promise<any> {
+    console.log("sendSellAdditionRequest() called on frontend!");
+    console.log(credential);
+
+    const formData = new FormData();
+    // FIXME: we don't really need to send the email here, the sub (used as user id) is enough
+    formData.append('email', credential.email);
+    formData.append('sub', credential.sub);
+    // INFO: We can't send the sellData object as is, so we need to send the individual fields
+    /* formData.append('sellData.id', sellData.id); // INFO:Setting the id is done on the server */
+    formData.append('sellData.user_id', sellData.user_id);
+    formData.append('sellData.stock_id', sellData.stock_id);
+    formData.append('sellData.amount', sellData.amount);
+    formData.append('sellData.price', sellData.price);
+
+    const data = fetch("http://localhost:5000/api/stocks/sell", {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Whole response: " + data);
+            const status = data.split(',')[0]
+            console.log("status is \"" + status + "\"");
+
+            switch (status) {
+                case "success_existingUser":
+                    {
+                        console.log("Able to add sell on existing user!");
                         return true;
                     }
                 // FIXME: Handle logout errors

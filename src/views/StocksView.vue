@@ -5,7 +5,9 @@ import { getBidsFromServer } from '../stocks/StocksAPI.ts'
 import { sendLogin } from '../stocks/StocksAPI.ts'
 import { sendLogout } from '../stocks/StocksAPI.ts'
 import { sendBidAdditionRequest } from '../stocks/StocksAPI.ts'
+import { sendSellAdditionRequest } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
+import { getStocks } from '../../Server/Stocks.ts';
 /*import { ref } from 'vue';*/
 
 /* import { getDB } from '../stocks/Stocks.ts' */
@@ -23,17 +25,46 @@ export default {
             loginCredential: {},
             amount: 0,
             price: 0,
+            bidData: {
+                user_id: 0,
+                stock_id: 0,
+                amount: 0,
+                price: 0
+            },
+            bidDataList: [] as {
+                user_id: number;
+                stock_id: number;
+                amount: number;
+                price: number;
+            }[],
+            sellData: {
+                user_id: 0,
+                stock_id: 0,
+                amount: 0,
+                price: 0
+            },
+            sellDataList: [] as {
+                user_id: number;
+                stock_id: number;
+                amount: number;
+                price: number;
+            }[],
             // TODO: Query these from the server when we open the stock page
             currentStock: {
                 id: 1,
                 name: 'Apple, Inc (AAPL)',
-                price: 69.69
+                last: 0
             }
         }
     },
     methods: {
         async fetchStocks() {
             this.stocks = await getStocksFromServer();
+            console.log(this.stocks);
+        },
+        async fetchLastTradedPrice() {
+            this.currentStock = await getStocks();
+            console.log(this.currentStock.last);
         },
         async get_database_data_from_server() {
             this.db = await getDB();
@@ -52,8 +83,8 @@ export default {
             console.log("Email: " + this.email);
             console.log("Name: " + this.userName);
 
-            const tepi = sendLogin(decodeCredential(response.credential));
-            console.log("Send Login response: " + tepi);
+            const response = sendLogin(decodeCredential(response.credential));
+            console.log("Send Login response: " + response);
             this.isUserLoggedIn = true;
         },
         formatPrice() {
@@ -66,27 +97,37 @@ export default {
             // TODO: (Jonna) Populate the bids list and update the UI
 
         },
-        requestBidAddition() {
-            const bidData = {
-                // INFO: We are not setting the bid id here, 
-                // because the server will determine that as the bid is actually being added
-                user_id : this.loginCredential.sub,
-                stock_id : this.currentStock.id,
-                amount : this.amount,
-                price : this.price
+        async requestBidAddition() {
+            // INFO: We are not setting the bid id here, 
+            // because the server will determine that as the bid is actually being added
+            const newBidData = {
+                user_id: this.loginCredential.sub,
+                stock_id: this.currentStock.id,
+                amount: this.amount,
+                price: this.price
             };
+
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
-            sendBidAdditionRequest(this.loginCredential, bidData);
+            sendBidAdditionRequest(this.loginCredential, newBidData);
+            this.bidDataList.push({ ...newBidData });
+            console.log(this.bidDataList);
         },
-        requestSellAddition() {
-            const sellData = {
-              amount: this.amount,
-              price: this.price
+        async requestSellAddition() {
+            const newSellData = {
+                user_id: this.loginCredential.sub,
+                stock_id: this.currentStock.id,
+                amount: this.amount,
+                price: this.price
             };
+
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
+            sendSellAdditionRequest(this.loginCredential, newSellData);
+            this.sellDataList.push({ ...newSellData });
+            console.log(this.sellDataList);
         }
     },
     mounted() {
+        this.fetchLastTradedPrice();
         /* console.log("Google App ID: " + this.googleAppID); */
     }
 }
@@ -97,7 +138,7 @@ export default {
         <div class="stock-container">
             <header>
                 <h1>Apple, Inc (AAPL)</h1>
-                <div class="price">Loading...</div>
+                <div class="price"> {{currentStock.last[0]}} USD</div>
             </header>
             <section class="chart">
                 <!-- CHART -->
@@ -133,6 +174,28 @@ export default {
         <!--     <button @click="sendLoginRequest">Log in</button> -->
         <!-- </div> -->
     </div>
+    <div v-if="isUserLoggedIn">
+    <h2>Bid:</h2>
+    <!-- Display each bidData item -->
+    <div v-for="(bidDataItem, index) in bidDataList" :key="index">
+        <p>User ID: {{ bidDataItem.user_id }}</p>
+        <p>Stock ID: {{ bidDataItem.stock_id }}</p>
+        <p>Amount: {{ bidDataItem.amount }}</p>
+        <p>Price: {{ bidDataItem.price }}</p>
+        <hr>
+    </div>
+    <div v-if="isUserLoggedIn">
+    <h2>Sell:</h2>
+    <!-- Display each sellData item -->
+    <div v-for="(sellDataItem, index) in sellDataList" :key="index">
+        <p>User ID: {{ sellDataItem.user_id }}</p>
+        <p>Stock ID: {{ sellDataItem.stock_id }}</p>
+        <p>Amount: {{ sellDataItem.amount }}</p>
+        <p>Price: {{ sellDataItem.price }}</p>
+        <hr>
+    </div>
+</div>
+</div>
 </template>
 
 <style>
