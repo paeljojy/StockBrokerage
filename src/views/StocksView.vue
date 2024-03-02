@@ -83,8 +83,8 @@ export default {
             console.log("Email: " + this.email);
             console.log("Name: " + this.userName);
 
-            const response = sendLogin(decodeCredential(response.credential));
-            console.log("Send Login response: " + response);
+            const ret = sendLogin(decodeCredential(response.credential));
+            console.log("Send Login responded: " + ret);
             this.isUserLoggedIn = true;
         },
         formatPrice() {
