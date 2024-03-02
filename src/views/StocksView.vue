@@ -6,6 +6,7 @@ import { sendLogout } from '../stocks/StocksAPI.ts'
 import { sendBidAdditionRequest } from '../stocks/StocksAPI.ts'
 import { sendSellAdditionRequest } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
+import { getStocks } from '../../Server/Stocks.ts';
 /*import { ref } from 'vue';*/
 
 /* import { getDB } from '../stocks/Stocks.ts' */
@@ -30,10 +31,10 @@ export default {
                 price: 0
             },
             bidDataList: [] as {
-            user_id: number;
-            stock_id: number;
-            amount: number;
-            price: number;
+                user_id: number;
+                stock_id: number;
+                amount: number;
+                price: number;
             }[],
             sellData: {
                 user_id: 0,
@@ -42,22 +43,27 @@ export default {
                 price: 0
             },
             sellDataList: [] as {
-            user_id: number;
-            stock_id: number;
-            amount: number;
-            price: number;
+                user_id: number;
+                stock_id: number;
+                amount: number;
+                price: number;
             }[],
             // TODO: Query these from the server when we open the stock page
             currentStock: {
                 id: 1,
                 name: 'Apple, Inc (AAPL)',
-                price: 69.69
+                last: 0
             }
         }
     },
     methods: {
         async fetchStocks() {
             this.stocks = await getStocksFromServer();
+            console.log(this.stocks);
+        },
+        async fetchLastTradedPrice() {
+            this.currentStock = await getStocks();
+            console.log(this.currentStock.last);
         },
         async get_database_data_from_server() {
             this.db = await getDB();
@@ -87,23 +93,6 @@ export default {
             this.price = parseFloat(this.price.toFixed(2)); // Rounds to nearest (up to) 2 decimals
         },
         async requestBidAddition() {
-            /*const bidData = {
-                // INFO: We are not setting the bid id here, 
-                // because the server will determine that as the bid is actually being added
-                user_id : this.loginCredential.sub,
-                stock_id : this.currentStock.id,
-                amount : this.amount,
-                price : this.price
-            }; */
-            /*
-            this.bidData.user_id = this.loginCredential.sub;
-            this.bidData.stock_id = this.currentStock.id;
-            this.bidData.amount = this.amount;
-            this.bidData.price = this.price;
-            console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
-            sendBidAdditionRequest(this.loginCredential, this.bidData);
-            this.bidDataList.push(this.bidData);
-            console.log(this.bidDataList); */
             const newBidData = {
                 user_id: this.loginCredential.sub,
                 stock_id: this.currentStock.id,
@@ -131,6 +120,7 @@ export default {
         }
     },
     mounted() {
+        this.fetchLastTradedPrice();
         /* console.log("Google App ID: " + this.googleAppID); */
     }
 }
@@ -141,7 +131,7 @@ export default {
         <div class="stock-container">
             <header>
                 <h1>Apple, Inc (AAPL)</h1>
-                <div class="price">Loading...</div>
+                <div class="price"> {{currentStock.last[0]}} USD</div>
             </header>
             <section class="chart">
                 <!-- CHART -->
