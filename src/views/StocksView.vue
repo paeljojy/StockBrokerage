@@ -4,6 +4,7 @@ import { getDB } from '../stocks/StocksAPI.ts'
 import { sendLogin } from '../stocks/StocksAPI.ts'
 import { sendLogout } from '../stocks/StocksAPI.ts'
 import { sendBidAdditionRequest } from '../stocks/StocksAPI.ts'
+import { sendSellAdditionRequest } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
 /*import { ref } from 'vue';*/
 
@@ -29,6 +30,18 @@ export default {
                 price: 0
             },
             bidDataList: [] as {
+            user_id: number;
+            stock_id: number;
+            amount: number;
+            price: number;
+            }[],
+            sellData: {
+                user_id: 0,
+                stock_id: 0,
+                amount: 0,
+                price: 0
+            },
+            sellDataList: [] as {
             user_id: number;
             stock_id: number;
             amount: number;
@@ -103,12 +116,18 @@ export default {
             this.bidDataList.push({ ...newBidData });
             console.log(this.bidDataList);
         },
-        requestSellAddition() {
-            const sellData = {
-              amount: this.amount,
-              price: this.price
+        async requestSellAddition() {
+            const newSellData = {
+                user_id: this.loginCredential.sub,
+                stock_id: this.currentStock.id,
+                amount: this.amount,
+                price: this.price
             };
+
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
+            sendSellAdditionRequest(this.loginCredential, newSellData);
+            this.sellDataList.push({ ...newSellData });
+            console.log(this.sellDataList);
         }
     },
     mounted() {
@@ -159,7 +178,7 @@ export default {
         <!-- </div> -->
     </div>
     <div v-if="isUserLoggedIn">
-    <h2>Bid Data</h2>
+    <h2>Bid:</h2>
     <!-- Display each bidData item -->
     <div v-for="(bidDataItem, index) in bidDataList" :key="index">
         <p>User ID: {{ bidDataItem.user_id }}</p>
@@ -168,6 +187,17 @@ export default {
         <p>Price: {{ bidDataItem.price }}</p>
         <hr>
     </div>
+    <div v-if="isUserLoggedIn">
+    <h2>Sell:</h2>
+    <!-- Display each sellData item -->
+    <div v-for="(sellDataItem, index) in sellDataList" :key="index">
+        <p>User ID: {{ sellDataItem.user_id }}</p>
+        <p>Stock ID: {{ sellDataItem.stock_id }}</p>
+        <p>Amount: {{ sellDataItem.amount }}</p>
+        <p>Price: {{ sellDataItem.price }}</p>
+        <hr>
+    </div>
+</div>
 </div>
 </template>
 
