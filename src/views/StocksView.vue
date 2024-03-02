@@ -1,6 +1,7 @@
 <script lang="ts">
 import { getStocksFromServer } from '../stocks/StocksAPI.ts'
 import { getDB } from '../stocks/StocksAPI.ts'
+import { getBidsFromServer } from '../stocks/StocksAPI.ts'
 import { sendLogin } from '../stocks/StocksAPI.ts'
 import { sendLogout } from '../stocks/StocksAPI.ts'
 import { sendBidAdditionRequest } from '../stocks/StocksAPI.ts'
@@ -37,14 +38,11 @@ export default {
         async get_database_data_from_server() {
             this.db = await getDB();
         },
-        async sendLogInRequest() {
-            await sendLogin(this.loginCredential);
-        },
         async sendLogoutRequest() {
             const loggedOutSuccessFully = await sendLogout(this.loginCredential);
             this.isUserLoggedIn = !loggedOutSuccessFully;
         },
-        async callback(response) {
+        async sendLoginRequest(response) {
             console.log("Logged In!");
             /* console.log(decodeCredential(response.credential)); */
             const credential = decodeCredential(response.credential);
@@ -55,11 +53,18 @@ export default {
             console.log("Name: " + this.userName);
 
             const tepi = sendLogin(decodeCredential(response.credential));
-            console.log(tepi);
+            console.log("Send Login response: " + tepi);
             this.isUserLoggedIn = true;
         },
         formatPrice() {
             this.price = parseFloat(this.price.toFixed(2)); // Rounds to nearest (up to) 2 decimals
+        },
+        requestBids() {
+            // TODO: (Jonna) This should be called when the user opens the stock page
+            const bids = getBidsFromServer(this.loginCredential);
+
+            // TODO: (Jonna) Populate the bids list and update the UI
+
         },
         requestBidAddition() {
             const bidData = {
@@ -121,11 +126,11 @@ export default {
         <div>
             <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
             <button @click="sendLogoutRequest" v-if="isUserLoggedIn">Log out</button>
-            <GoogleLogin :callback="callback" v-if="!isUserLoggedIn"/>
+            <GoogleLogin :callback="sendLoginRequest" v-if="!isUserLoggedIn"/>
         </div>
         <!-- <div> -->
-        <!--     <input type="sendLogInRequest" v-model="email" /> -->
-        <!--     <button @click="sendLogInRequest">Log in</button> -->
+        <!--     <input type="sendLoginRequest" v-model="email" /> -->
+        <!--     <button @click="sendLoginRequest">Log in</button> -->
         <!-- </div> -->
     </div>
 </template>

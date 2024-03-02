@@ -45,10 +45,42 @@ export async function getStocksFromServer(): Promise<any> {
     return data;
 }
 
+// INFO: Requests all the current bids (this includes the user's own bids) from the server
+// @param credential: The user's email and sub
+export async function getBidsFromServer(credential): Promise<any> {
+    console.log("getBidsFromServer() called on frontend!");
+    console.log(credential);
+
+    const formData = new FormData();
+    formData.append('email', credential.email);
+    formData.append('sub', credential.sub);
+    const data = fetch("http://localhost:5000/api/stocks/bids", {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Whole response: " + data);
+            const status = data.split(',')[0]
+            console.log("status is \"" + status + "\"");
+
+            switch (status) {
+                case "success_existingUser":
+                    {
+                        console.log("Get bids success on existing user!");
+                        return data;
+                    }
+            }
+        }
+        );
+    return data;
+}
+
 // INFO: Sends a login request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
 export async function sendLogin(credential): Promise<any> {
     console.log("sendLogin() called on frontend!");
+    console.log("Credentials:");
     console.log(credential);
 
     const formData = new FormData();
@@ -68,7 +100,7 @@ export async function sendLogin(credential): Promise<any> {
                 case "success_existingUser":
                     {
                         console.log("Login successful on existing user!");
-                        return "teppo";
+                        return "hululululu";
                     }
                 case "success_newUser":
                     {

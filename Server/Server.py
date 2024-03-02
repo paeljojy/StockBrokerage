@@ -8,6 +8,13 @@ import requests
 import os
 print("CWD IS: ", os.getcwd())
 
+# TODO: (Pate) Add a class for the response, so that we can return a response object instead of doing jsonify("error") or jsonify("success") etc.
+class Response:
+    def __init__(self, status, message):
+        self.status = status
+        self.message = message
+        self.data = None
+
 class Bid:
     # TODO: Query the database for the next available id
     # and use it as the id of the bid
@@ -39,7 +46,7 @@ class User:
         for user in users:
             if user.id == id:
                 return user
-        return None  # Return None if no user with the given id is found
+        return User(-1, "")  # Return None if no user with the given id is found
 
 class Server():
     cachedData = None
@@ -141,6 +148,11 @@ def sendlogin():
 
     print("Received email:" + userEmail)
     print("Received sub:" + userSub)
+
+    # Check if user is already logged in
+    if userSubNumber == User.get_user_by_id(server.loggedInUsers, userSubNumber).id:
+        return jsonify("error_alreadyLoggedIn, logout error: user is already logged in!")
+
     conn = sqlite3.connect('Database/Main.db')
 
     # Make prepared statement instead
@@ -162,9 +174,9 @@ def sendlogin():
         finally:
             cursor.close()
             conn.close()
-
-    cursor.close()
-    conn.close()
+    else:
+        cursor.close()
+        conn.close()
 
     server.loggedInUsers.add(User(userSubNumber, userEmail))
     return jsonify("success_existingUser, login success: existing user!")
@@ -208,6 +220,38 @@ def sendlogout():
     server.loggedInUsers.remove(User(userSubNumber, userEmail))
     return jsonify("success_existingUser, logout success: existing user!")
     
+# INFO: Handles request to get all the bids for a stock
+@app.route('/api/stocks/bids', methods=['GET'])
+def handleGetBidsRequest():
+    # userEmail = request.form.get("email", "")
+    userSub = request.form.get("sub", "")
+
+    # Convert user sub string to int
+    userSubNumber = int(userSub) # INFO: This is used as the user id
+
+    if userSubNumber != User.get_user_by_id(server.loggedInUsers, userSubNumber).id:
+        return jsonify("error_userNotLoggedIn, Failed to get bids from server error: user is not logged in!")
+
+    conn = sqlite3.connect('Database/Main.db')
+    cursor = conn.execute("SELECT * FROM BIDS");
+
+    # Make prepared statement instead of using raw sql
+    try:
+        conn.commit()
+        trades = []
+        for row in cursor:
+            trades.append(row)
+        return jsonify(trades)
+    except:
+        cursor.close()
+        conn.close()
+        return jsonify("error_getBids, Fetch error: failed to get bids from the database!")
+    finally:
+        cursor.close()
+        conn.close()
+
+    # return jsonify("success_getBids, Fetch success: existing user fetched bids!")
+
 # INFO: Handles bid addition requests from the client
 @app.route('/api/stocks/bid', methods=['POST'])
 def handleBidAddition():
