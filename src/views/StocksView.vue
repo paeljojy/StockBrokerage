@@ -7,6 +7,8 @@ import { sendLogout } from '../stocks/StocksAPI.ts'
 import { sendBidAdditionRequest } from '../stocks/StocksAPI.ts'
 import { sendSellAdditionRequest } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
+
+// FIXME: Server/Stocks.ts is deprecated, use StocksAPI.ts instead
 import { getStocks } from '../../Server/Stocks.ts';
 /*import { ref } from 'vue';*/
 
@@ -92,6 +94,9 @@ export default {
         },
         requestBids() {
             // TODO: (Jonna) This should be called when the user opens the stock page
+            // and is actually logged in, this will probably only be a temporary solution
+            // as we want the final application to force the user to log in
+            // before even be able to navigate to the stock page (or even show it)
             const bids = getBidsFromServer(this.loginCredential);
 
             // TODO: (Jonna) Populate the bids list and update the UI
@@ -128,6 +133,11 @@ export default {
     },
     mounted() {
         this.fetchLastTradedPrice();
+        const bids = getBidsFromServer(this.loginCredential);
+        for (bid in bids)
+        {
+            this.bidDataList.push(bid);
+        }
         /* console.log("Google App ID: " + this.googleAppID); */
     }
 }
@@ -155,6 +165,10 @@ export default {
                 <div class="button-group">
                     <button class="trade-btn bid" @click="requestBidAddition">BID</button>
                     <button class="trade-btn sell" @click="requestSellAddition">SELL</button>
+
+                    <!-- NOTE: Only for testing -->
+                    <!-- FIXME: Remove later -->
+                    <button class="trade-btn sell" @click="requestBids">GET BIDS</button>
                 </div>
             </div>
         </div>

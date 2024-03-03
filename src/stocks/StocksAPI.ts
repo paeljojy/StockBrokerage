@@ -60,9 +60,20 @@ export async function getBidsFromServer(credential): Promise<any> {
     })
         .then(response => response.json())
         .then(data => {
-            console.log("Whole response: " + data);
-            const status = data.split(',')[0]
+            for (let i = 0; i < data.length; i++) {
+                const element = data[i];
+                /* console.log("Element: " + i + ". " + element); */
+                console.log(element);
+            }
+            const status = "success_existingUser";
             console.log("status is \"" + status + "\"");
+
+            // TODO: Handle errors 
+            // We want to make a generic response that can be used for all requests etc.
+            // TODO: Get rid of string parsing for status and error handling
+            if (data.length > 0) {
+
+            }
 
             switch (status) {
                 case "success_existingUser":

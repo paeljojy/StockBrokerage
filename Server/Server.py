@@ -221,7 +221,7 @@ def sendlogout():
     return jsonify("success_existingUser, logout success: existing user!")
     
 # INFO: Handles request to get all the bids for a stock
-@app.route('/api/stocks/bids', methods=['GET'])
+@app.route('/api/stocks/bids', methods=['POST'])
 def handleGetBidsRequest():
     # userEmail = request.form.get("email", "")
     userSub = request.form.get("sub", "")
@@ -233,15 +233,16 @@ def handleGetBidsRequest():
         return jsonify("error_userNotLoggedIn, Failed to get bids from server error: user is not logged in!")
 
     conn = sqlite3.connect('Database/Main.db')
+    # TODO: Link the user id with user name so the users don't see their or other's user ids'
     cursor = conn.execute("SELECT * FROM BIDS");
 
     # Make prepared statement instead of using raw sql
     try:
         conn.commit()
-        trades = []
+        bids = []
         for row in cursor:
-            trades.append(row)
-        return jsonify(trades)
+            bids.append(row)
+        return jsonify(bids)
     except:
         cursor.close()
         conn.close()
