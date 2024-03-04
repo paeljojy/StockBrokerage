@@ -73,7 +73,13 @@ export default {
         },
         async sendLogoutRequest() {
             const loggedOutSuccessFully = await sendLogout(this.loginCredential);
-            this.isUserLoggedIn = !loggedOutSuccessFully;
+            if (loggedOutSuccessFully) {
+                // Clear localstorage 
+                localStorage.removeItem('isLoggedIn');
+                localStorage.removeItem('loginCredential');
+
+                this.isUserLoggedIn = false;
+            }
         },
         async sendLoginRequest(response) {
             console.log("Logged In!");
@@ -84,6 +90,10 @@ export default {
             this.loginCredential = credential;
             console.log("Email: " + this.email);
             console.log("Name: " + this.userName);
+
+            // Use localstorage to save login info
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('loginCredential', JSON.stringify(credential));
 
             const ret = sendLogin(decodeCredential(response.credential));
             console.log("Send Login responded: " + ret);
@@ -139,6 +149,13 @@ export default {
             this.bidDataList.push(bid);
         }
         /* console.log("Google App ID: " + this.googleAppID); */
+
+        // Check if the user is logged in
+        const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+        if (isLoggedIn) {
+            this.isUserLoggedIn = true;
+            this.loginCredential = JSON.parse(localStorage.getItem('loginCredential') || '{}');
+        }
     }
 }
 </script>
