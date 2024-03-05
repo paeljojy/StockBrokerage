@@ -1,32 +1,4 @@
-
-/* --Drop table if it exists */
-/* DROP TABLE IF EXISTS users; */
-/**/
-/* --Create the user table */
-/* CREATE TABLE users( */
-/* sub INTEGER NOT NULL, */
-/* email TEXT, */
-/* CONSTRAINT users_pk PRIMARY KEY(sub) */
-/* ); */
-/**/
-/* --Drop table if it exists */
-/* DROP TABLE IF EXISTS bids; */
-/**/
-/* --Create user bids */
-/* CREATE TABLE bids( */
-/* bid_id INTEGER NOT NULL, */
-/* "user" INTEGER, */
-/* CONSTRAINT bids_pk PRIMARY KEY(bid_id) */
-/* );`, (_, res) => console.log(res) */
-
-/* export async function getDB(): Promise<any> { */
-/*     const db = new Database('Database/Main.db'); */
-/*         db.get(`SELECT RANDOM() % 100 as result;`, (_, res) => console.log(res) */
-/*     ); */
-/*     return db; */
-/* } */
-
-/* import mariadb from 'mariadb'; */
+// INFO: This file contains the API calls to the server
 
 export async function getDB(): Promise<any> {
     console.log("getDB() called on frontend!");
@@ -47,7 +19,7 @@ export async function getStocksFromServer(): Promise<any> {
 
 // INFO: Requests all the current bids (this includes the user's own bids) from the server
 // @param credential: The user's email and sub
-export async function getBidsFromServer(credential): Promise<any> {
+export async function getBidsFromServer(credential: { email: string | Blob; sub: string | Blob; }): Promise<any> {
     console.log("getBidsFromServer() called on frontend!");
     console.log(credential);
 
@@ -60,13 +32,12 @@ export async function getBidsFromServer(credential): Promise<any> {
     })
         .then(response => response.json())
         .then(data => {
-            for (let i = 0; i < data.length; i++) {
-                const element = data[i];
-                /* console.log("Element: " + i + ". " + element); */
-                console.log(element);
-            }
-            const status = "success_existingUser";
-            console.log("status is \"" + status + "\"");
+            console.log("Whole response: " + data);
+            console.log("Status code:" + data.status);
+            console.log("Message: " + data.message);
+            console.log(data.data);
+
+            const status = data.data;
 
             // TODO: Handle errors 
             // We want to make a generic response that can be used for all requests etc.
@@ -89,7 +60,7 @@ export async function getBidsFromServer(credential): Promise<any> {
 
 // INFO: Sends a login request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
-export async function sendLogin(credential): Promise<any> {
+export async function sendLogin(credential: { email: string | Blob; sub: string, first_name: string, last_name: string | Blob; }): Promise<any> {
     console.log("sendLogin() called on frontend!");
     console.log("Credentials:");
     console.log(credential);
@@ -97,6 +68,8 @@ export async function sendLogin(credential): Promise<any> {
     const formData = new FormData();
     formData.append('email', credential.email);
     formData.append('sub', credential.sub);
+    formData.append('first_name', credential.first_name);
+    formData.append('last_name', credential.last_name);
     const data = fetch("http://localhost:5000/api/auth/login", {
         method: 'POST',
         body: formData
@@ -107,6 +80,7 @@ export async function sendLogin(credential): Promise<any> {
             const status = data.split(',')[0]
             console.log("status is \"" + status + "\"");
 
+            // TODO: Use response codes instead of strings
             switch (status) {
                 case "success_existingUser":
                     {
@@ -134,7 +108,7 @@ export async function sendLogin(credential): Promise<any> {
 // INFO: Sends a logout request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
 // @return: true if the logout was successful, false otherwise
-export async function sendLogout(credential): Promise<any> {
+export async function sendLogout(credential: { email: string | Blob; sub: string | Blob; }): Promise<any> {
     console.log("sendLogout() called on frontend!");
     console.log(credential);
 
@@ -179,7 +153,7 @@ export async function sendLogout(credential): Promise<any> {
 // INFO: Sends a bid addition request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
 // @param bidData: Added bid data
-export async function sendBidAdditionRequest(credential, bidData): Promise<any> {
+export async function sendBidAdditionRequest(credential: { email: string | Blob; sub: string | Blob; }, bidData: { user_id: string | Blob; stock_id: string | Blob; amount: string | Blob; price: string | Blob; }): Promise<any> {
     console.log("sendBidAdditionRequest() called on frontend!");
     console.log(credential);
 
@@ -232,7 +206,7 @@ export async function sendBidAdditionRequest(credential, bidData): Promise<any> 
 // INFO: Sends a sell addition request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
 // @param sellData: Added sell data
-export async function sendSellAdditionRequest(credential, sellData): Promise<any> {
+export async function sendSellAdditionRequest(credential: { email: string | Blob; sub: string | Blob; }, sellData: { user_id: string | Blob; stock_id: string | Blob; amount: string | Blob; price: string | Blob; }): Promise<any> {
     console.log("sendSellAdditionRequest() called on frontend!");
     console.log(credential);
 

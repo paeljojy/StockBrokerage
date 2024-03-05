@@ -8,15 +8,76 @@ import requests
 import os
 print("CWD IS: ", os.getcwd())
 
-# TODO: (Pate) Add a class for the response, so that we can return a response object instead of doing jsonify("error") or jsonify("success") etc.
+# NOTE: Response object is a wrapper for the response data that is sent to the client
+# It contains the status code of the response, the message and the actual data
+# The status code is used to determine if the request was successful or not
+# based on situation specific criteria this can be anything you want
+# and the method using a response object should clearly indicate what each status code means
+# for example: 0 = success, 1 = error etc.
+# NOTE: Be careful when refactoring status codes, as the client and the server
+# have to both match the status code logic to work properly
+#
+# INFO: You can use enums to make this more readable
+# enum StatusCode { Success = 0, Error = 1, Unauthorized = 2, Unknown = 3, } etc...
 class Response:
-    def __init__(self, status, message):
+    status = -1
+    message = ''
+    data = None
+
+    def __init__(self, status, message, data):
         self.status = status
         self.message = message
-        self.data = None
+        self.data = data 
+
+    def getStatus(self):
+        return self.status
+
+    def getMessage(self):
+        return self.message
+
+    def getData(self):
+        # Make the object into a dictionary for JSON conversion
+        return self.__dict__
+
+# INFO: Manages stock trades, bids and sell offers
+# it can be used to add, remove, update and get trades
+# Consider this as a singleton
+# Implementation:
+# We start by matching bids with sell offers by the highest offer price and the lowest bid price
+# (Similar to how RuneScape's Grand Exchange works)
+# given that the trades are always made when a new offer or bid is added
+# the system will always be up to date unless the stock market price changes
+# when the stock market price changes we update the whole system and match bids with sell offers
+class StockTradeManager:
+    trades = []     # Already made trades
+
+    # Both of these shouldn't store bids or selloffers that could be matched
+    # unless the stock price has just changed, that's why we keep track of them on the server
+    bids = []       # Bids that are waiting to be matched with sell offers
+    sellOffers = [] # Sell offers that are waiting to be matched with bids
+
+    def __init__(self):
+        self.trades = []
+
+        self.bids = []
+        self.sellOffers = []
+
+    def addTrade(self):
+        pass
+
+    # Adds a new bid and matches it with a sell offer if possible
+    def addBid(self, newBid):
+        self.bids.append(newBid)
+        pass
+
+    # General update that is used whenever a new stock price is fetched
+    # This will update the whole system and match bids with sell offers if possible
+    # based on the new stock market price
+    def update(self):
+        pass
 
 class Bid:
-    # TODO: Query the database for the next available id
+    # INFO: We query the database for the next available id
     # and use it as the id of the bid
     def __init__(self, id, user_id, stock_id, amount, price):
         self.id = id # INFO: this is id of the bid, NOT THE USER
@@ -141,6 +202,8 @@ def getdb():
 def sendlogin():
     userEmail = request.form.get("email", "")
     userSub = request.form.get("sub", "")
+    first_name = request.form.get("first_name", "")
+    last_name = request.form.get("last_name", "")
 
     # Convert user sub string to int and back to string to remove possible sql injection
     userSubNumber = int(userSub)
@@ -164,7 +227,7 @@ def sendlogin():
 
     if len(list) == 0:
         try:
-            cursor = conn.execute("INSERT INTO USERS (sub, email) VALUES (?, ?)", (userSub, userEmail))
+            cursor = conn.execute("INSERT INTO USERS (sub, email, first_name, last_name) VALUES (?, ?, ?, ?)", (userSub, userEmail, first_name, last_name))
             conn.commit()
             server.loggedInUsers.add(User(userSubNumber, userEmail))
             return jsonify("success_newUser, login success: new user!")
@@ -233,20 +296,27 @@ def handleGetBidsRequest():
         return jsonify("error_userNotLoggedIn, Failed to get bids from server error: user is not logged in!")
 
     conn = sqlite3.connect('Database/Main.db')
-    # TODO: Link the user id with user name so the users don't see their or other's user ids'
+    # TODO: (Anyone) Link the user id with user name so the users don't see their or other's user ids'
     cursor = conn.execute("SELECT * FROM BIDS");
+    # TODO: (Anyone) Something like this: SELECT * FROM BIDS WHERE user_id = user_id
+    # and replace "*" with the fields we want to show to the user in the frontend
 
-    # Make prepared statement instead of using raw sql
     try:
         conn.commit()
         bids = []
         for row in cursor:
             bids.append(row)
-        return jsonify(bids)
+        response = Response(0, "Fetch success: Successfully fetched bids from the server!", bids)
+        data = response.getData()
+        return jsonify(data)
+
     except:
         cursor.close()
         conn.close()
-        return jsonify("error_getBids, Fetch error: failed to get bids from the database!")
+        response = Response(1, "Fetch error: Failed to get bids from the database!", "error")
+        return jsonify(response)
+
+        # return jsonify("error_getBids, Fetch error: failed to get bids from the database!")
     finally:
         cursor.close()
         conn.close()
@@ -254,6 +324,13 @@ def handleGetBidsRequest():
     # return jsonify("success_getBids, Fetch success: existing user fetched bids!")
 
 # INFO: Handles bid addition requests from the client
+# This is the trade request that the user makes to the server
+# with the intention of buying a stock with a given
+# amount and maximum price the user is willing to pay
+# given that there is a sell offer that matches the bid
+# the user making the bid will be matched with the sell offer
+# and only charged the price of the sell offer that is 
+# the highest price that is still equal or lower than the bid price
 @app.route('/api/stocks/bid', methods=['POST'])
 def handleBidAddition():
     userEmail = request.form.get("email", "")
@@ -294,9 +371,10 @@ def handleBidAddition():
     # TODO: Investigate: does sqlite3 have a connection limit similar to MySQL/MariaDB or is just the
     # OS concurrent file read limit
     conn = sqlite3.connect('Database/Main.db')
-    cursor = conn.execute("INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newBid.id, newBid.user_id, newBid.stock_id, newBid.amount, newBid.price))
 
     # Make prepared statement instead of using raw sql
+    cursor = conn.execute("INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newBid.id, newBid.user_id, newBid.stock_id, newBid.amount, newBid.price))
+
     try:
         conn.commit()
     except:

@@ -8,8 +8,6 @@ import { sendBidAdditionRequest } from '../stocks/StocksAPI.ts'
 import { sendSellAdditionRequest } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
 
-// FIXME: Server/Stocks.ts is deprecated, use StocksAPI.ts instead
-import { getStocks } from '../../Server/Stocks.ts';
 /*import { ref } from 'vue';*/
 
 /* import { getDB } from '../stocks/Stocks.ts' */
@@ -23,7 +21,9 @@ export default {
             db: [],
             email: '',
             isUserLoggedIn: false,
-            userName: '',
+            // TODO: could wrap user data in an object
+            userFirstName: '',
+            userLastName: '',
             loginCredential: {},
             amount: 0,
             price: 0,
@@ -82,6 +82,8 @@ export default {
             this.email = credential.email;
             this.userName = credential.name;
             this.loginCredential = credential;
+            // Parse first and last name from the response
+
             console.log("Email: " + this.email);
             console.log("Name: " + this.userName);
 
@@ -133,12 +135,16 @@ export default {
     },
     mounted() {
         this.fetchLastTradedPrice();
-        const bids = getBidsFromServer(this.loginCredential);
-        for (bid in bids)
+
+        if (this.isUserLoggedIn)
         {
-            this.bidDataList.push(bid);
+            const bids = getBidsFromServer(this.loginCredential);
+            for (bid in bids)
+            {
+                this.bidDataList.push(bid);
+            }
+            /* console.log("Google App ID: " + this.googleAppID); */
         }
-        /* console.log("Google App ID: " + this.googleAppID); */
     }
 }
 </script>

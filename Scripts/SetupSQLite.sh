@@ -8,7 +8,7 @@ pushd "$(dirname "$0")/.." > /dev/null
 sqlite3 Database/Main.db < Database/SQL/CreateMainDB.sql
 
 # Insert some sample data into main db
-sqlite3 -line Database/Main.db "INSERT INTO users (sub, email) VALUES ('2', 'teppo@gmail.com');"
+sqlite3 -line Database/Main.db "INSERT INTO users (sub, email, first_name, last_name) VALUES ('2', 'teppo@gmail.com', 'Teppo', 'Testi');"
 
 sqlite3 -line Database/Main.db "INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (1, '1', '1', 30, 30);"
 
@@ -26,6 +26,13 @@ echo "=============================================="
 
 echo "Trades: "
 sqlite3 -line Database/Main.db "SELECT * FROM trades;"
+echo "=============================================="
+
+# Add some user owned stocks for user
+sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id, amount) VALUES ('115529453441494604337', '1', 69);"
+
+echo "User owned stocks: "
+sqlite3 -line Database/Main.db "SELECT * FROM user_owned_stocks;"
 echo "=============================================="
 
 popd > /dev/null

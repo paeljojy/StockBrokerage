@@ -7,6 +7,8 @@ DROP TABLE IF EXISTS users;
 CREATE TABLE users (
 	sub TEXT NOT NULL,
 	email TEXT,
+    first_name TEXT,
+    last_name TEXT,
 	CONSTRAINT users_pk PRIMARY KEY (sub)
 );
 
