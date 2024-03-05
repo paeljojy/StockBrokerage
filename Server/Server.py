@@ -461,7 +461,7 @@ def handle_bid_addition():
     stock_id = request.form.get("bidData.stock_id", "")
     amount = request.form.get("bidData.amount", "")
     price = request.form.get("bidData.price", "")
-    newBid = Bid(Server.query_next_bid_id(), user_id, stock_id, amount, price)
+    newBid = Bid(Server.query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price)
 
     # TODO: Query next id from the database
 
@@ -482,7 +482,8 @@ def handle_bid_addition():
     conn = sqlite3.connect('Database/Main.db')
 
     # Make prepared statement instead of using raw sql
-    cursor = conn.execute("INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newBid.id, newBid.user.id, newBid.stock_id, newBid.amount, newBid.price))
+    # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
+    cursor = conn.execute("INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newBid.id, str(newBid.user.id), newBid.stock_id, newBid.amount, newBid.price))
 
     try:
         conn.commit()
