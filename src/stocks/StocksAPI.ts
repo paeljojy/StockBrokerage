@@ -32,25 +32,25 @@ export async function getBidsFromServer(credential: { email: string | Blob; sub:
     })
         .then(response => response.json())
         .then(data => {
-            console.log("Whole response: " + data);
+            console.log("Whole response: ");
+            console.log(data);
+
             console.log("Status code:" + data.status);
             console.log("Message: " + data.message);
             console.log(data.data);
 
-            const status = data.data;
-
-            // TODO: Handle errors 
-            // We want to make a generic response that can be used for all requests etc.
-            // TODO: Get rid of string parsing for status and error handling
-            if (data.length > 0) {
-
-            }
+            const status = data.status;
 
             switch (status) {
-                case "success_existingUser":
+                case 0:
                     {
                         console.log("Get bids success on existing user!");
                         return data;
+                    }
+                case 1:
+                    {
+                        console.log("Couldn't fetch bids, is the server running?");
+                        return null;
                     }
             }
         }

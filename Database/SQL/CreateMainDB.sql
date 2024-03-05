@@ -12,6 +12,16 @@ CREATE TABLE users (
 	CONSTRAINT users_pk PRIMARY KEY (sub)
 );
 
+DROP TABLE IF EXISTS logged_in_users;
+
+-- Create table for currently logged in users
+CREATE TABLE logged_in_users(
+	sub TEXT NOT NULL,
+    logged_in INTEGER NOT NULL, -- INFO: 0 = not logged in, 1 = currently logged in
+    logged_in_at DATETIME NOT NULL,
+	CONSTRAINT users_pk PRIMARY KEY (sub)
+);
+
 DROP TABLE IF EXISTS offers;
 
 -- TODO: Create user sell offers  

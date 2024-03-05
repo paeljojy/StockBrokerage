@@ -38,5 +38,16 @@ Scripts/
 ### Developer documentation
 Docs/*
 
-### 
+## Code style
+# Python
+[Google python style guide](https://google.github.io/styleguide/pyguide.html#316-naming)
+
+The python environment should be generated into the Server directory:
+```bash
+cd Server
+pip -m venv venv
+```
+
+# TypeScript
+[Google TypeScript style guide](https://google.github.io/styleguide/tsguide.html)
 
