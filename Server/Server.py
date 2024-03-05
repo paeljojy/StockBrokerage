@@ -368,7 +368,7 @@ def handle_logout_request():
     conn = sqlite3.connect('Database/Main.db')
 
     # TODO: Wrap in try catch and use a transaction
-    cursor = conn.execute("SELECT * FROM logged_in_users WHERE sub = ?", (userSub))
+    cursor = conn.execute("SELECT * FROM logged_in_users WHERE sub = ?", (userSub, ))
 
     users = []
     for row in cursor:
