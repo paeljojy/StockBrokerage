@@ -5,6 +5,7 @@ from datetime import datetime
 import requests
 import time
 import os
+from enum import Enum
 
 # print("CWD IS: ", os.getcwd())
 
@@ -19,6 +20,7 @@ import os
 #
 # INFO: You can use enums to make this more readable
 # enum StatusCode { Success = 0, Error = 1, Unauthorized = 2, Unknown = 3, } etc...
+
 class Response:
     status = -1
     message = ''
@@ -38,6 +40,8 @@ class Response:
     def get_data(self):
         # Make the object into a dictionary for JSON conversion
         return self.__dict__
+
+    # Jsonify the response object to be sent to the client
     def jsonify(self):
         return jsonify(self.__dict__)
 
@@ -376,9 +380,14 @@ def get_db():
     conn.close()
     return jsonify(list)
 
+
 # INFO: Handles log in requests from clients
+# StatusCodes: 
+# 0 = success
+# 1 = error
 @app.route('/api/auth/login', methods=['POST'])
 def handle_login_request():
+
     userEmail = request.form.get("email", "")
     userSub = request.form.get("sub", "")
     first_name = request.form.get("first_name", "")
@@ -393,7 +402,7 @@ def handle_login_request():
 
     # Check if user is already logged in
     if userSubNumber == server.get_user_by_id(userSubNumber).id:
-        return jsonify("error_alreadyLoggedIn, login error: user is already logged in!")
+        return Response(1, "Login success: user is already logged in!").jsonify()
 
     conn = sqlite3.connect('Database/Main.db')
 
@@ -418,10 +427,13 @@ def handle_login_request():
             cursor_insert.close()
 
             server.logged_in_users[userSubNumber] = (User(userSubNumber, userEmail))
-            return jsonify("success_newUser, login success: new user!")
+            return Response(0, "Login success: new user!").jsonify()
+            # return jsonify("success_newUser, login success: new user!")
+
         except:
             print("error_newUser, login failed: new user error! database doesn't most likely exists on disk")
-            return jsonify("error_newUser, login failed: new user error!")
+            return Response(1, "Login failed: new user error!").jsonify()
+            # return jsonify("error_newUser, login failed: new user error!")
         finally:
             cursor.close()
             conn.close()
@@ -492,6 +504,7 @@ def handle_get_bids_request():
 
     if userSubNumber != server.get_user_by_id(userSubNumber).id:
         return jsonify("error_userNotLoggedIn, Failed to get bids from server error: user is not logged in!")
+        return Response(1, "")
 
     conn = sqlite3.connect('Database/Main.db')
     # TODO: (Anyone) Link the user id with user name so the users don't see their or other's user ids'

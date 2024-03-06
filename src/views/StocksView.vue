@@ -78,7 +78,8 @@ export default {
             this.db = await getDB();
         },
         async sendLogoutRequest() {
-            const loggedOutSuccessFully = await sendLogout(this.loginCredential);
+            const loggedOutSuccessFully = true;
+                await sendLogout(this.loginCredential);
             if (loggedOutSuccessFully) {
                 // Clear localstorage 
                 localStorage.removeItem('isLoggedIn');

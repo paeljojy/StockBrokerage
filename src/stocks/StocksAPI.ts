@@ -83,7 +83,7 @@ export async function sendLogin(credential: { email: string | Blob; sub: string,
                 case "success_existingUser":
                     {
                         console.log("Login successful on existing user!");
-                        return "hululululu";
+                        return "";
                     }
                 case "success_newUser":
                     {
@@ -120,15 +120,21 @@ export async function sendLogout(credential: { email: string | Blob; sub: string
         .then(response => response.json())
         .then(data => {
             console.log("Whole response: " + data);
-            const status = data.split(',')[0]
-            console.log("status is \"" + status + "\"");
+            console.log("Status is \"" + data.status + "\"");
+            console.log("Message is \"" + data.message + "\"");
 
-            switch (status) {
-                case "success_existingUser":
+            switch (data.status) {
+                case 0:
                     {
                         console.log("Logout successful on existing user!");
                         return true;
                     }
+                case 1:
+                    {
+                        console.log("Logout failed on existing user!");
+                        return false;
+                    }
+
                 // FIXME: Handle logout errors
                 /* case "success_newUser": */
                 /*     { */
