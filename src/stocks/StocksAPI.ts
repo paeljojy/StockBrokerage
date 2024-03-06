@@ -11,10 +11,11 @@ export async function getDB(): Promise<any> {
 
 export async function getStocksFromServer(): Promise<any> {
     console.log("getStocks() called on frontend!");
-    const data = fetch('http://localhost:5000/api/stocks/apple')
-        .then(response => response.json())
-        .then(data => console.log(data));
-    return data;
+    const response = await fetch('http://localhost:5000/api/stocks/apple');
+    const jsonData = await response.json();
+    // console.log(response);
+    console.log(jsonData);
+    return jsonData;
 }
 
 // INFO: Requests all the current bids (this includes the user's own bids) from the server

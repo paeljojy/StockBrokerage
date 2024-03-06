@@ -7,6 +7,7 @@ import { sendLogout } from '../stocks/StocksAPI.ts'
 import { sendBidAdditionRequest } from '../stocks/StocksAPI.ts'
 import { sendSellAdditionRequest } from '../stocks/StocksAPI.ts'
 import { decodeCredential } from 'vue3-google-login'
+import { isProxy, toRaw } from 'vue';
 
 /*import { ref } from 'vue';*/
 
@@ -63,6 +64,11 @@ export default {
         async fetchStocks() {
             this.stocks = await getStocksFromServer();
             console.log(this.stocks);
+            let rawData = this.stocks;
+            if (isProxy(this.stocks)){
+                rawData = toRaw(this.stocks)
+            }
+            console.log(rawData);
         },
         async fetchLastTradedPrice() {
             this.currentStock = await getStocks();
