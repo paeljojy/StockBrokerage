@@ -55,12 +55,13 @@ CREATE TABLE stocks(
     id INTEGER NOT NULL,
     name TEXT NOT NULL,
     current_price REAL NOT NULL,
+    fetched_at DATETIME NOT NULL,
     -- TODO: Add rest of the fields found in the REST API
     CONSTRAINT stocks_pk PRIMARY KEY (id, name) -- INFO: We don't want to have two stocks with the same name
 );
 
 -- Insert Apple stock for testing
-INSERT INTO stocks (id, name, current_price) VALUES (1, 'Apple, Inc', 1337.00);
+INSERT INTO stocks (id, name, current_price, fetched_at) VALUES (1, 'Apple, Inc', 1337.00, '0');
 
 DROP TABLE IF EXISTS user_owned_stocks;
 
