@@ -33,5 +33,22 @@ jobs:
       - name: tests
         run: |
           npm run test:unit:runner
-
-          
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          cd Server
+          python -m venv venv
+          source venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Lint with Ruff
+        run: |
+          pip install ruff
+          ruff --output-format=github .
+        continue-on-error: true    
+      - name: Test with unittest
+        run: |
+          python -m unittest server_test.py
