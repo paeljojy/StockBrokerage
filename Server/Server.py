@@ -63,10 +63,18 @@ class StockTradeManager:
         self.bids = []
         self.sell_offers = []
 
+    # Adds a new trade to the trades list
+    # NOTE: This is called when a bid is matched with a sell offer with a valid price
+    # and a transaction has been made
     def add_trade(self):
         pass
 
-    # Adds a new bid and matches it with a sell offer if possible
+    # Adds a new sell offer and updates
+    def add_offer(self, newOffer):
+        self.sell_offers.append(newOffer)
+        self.update()
+
+    # Adds a new bid and updates
     def add_bid(self, newBid):
         self.bids.append(newBid)
         self.update()
@@ -83,6 +91,8 @@ class StockTradeManager:
                 if bid.price + bid.price * .1 >= sellOffer.price:
                     # TODO: (Pate 󰯈 ) We should split the sell offer if the amount is greater than the bid amount here
 
+                    # NOTE: We have a chance to duplicate a stock here if the server would crash during this
+                    # TODO: Make this transactional
                     conn = sqlite3.connect('Database/Main.db')
                     # Remove the bid and the sell offer from the lists
                     cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id))
@@ -127,15 +137,16 @@ class User:
     def is_valid(self):
         return self.id != -1
 
-class Bid:
+class Order:
     user = User()
     id = -1
     stock_id = -1
     amount = -1
     price = -1
+    order_type = 0 # 0 = bid, 1 = sell offer
 
     # NOTE: We query the database for the next available id and use it as the id of the bid
-    def __init__(self, id, user, stock_id, amount, price):
+    def __init__(self, id, user, stock_id, amount, price, order_type = 0): # NOTE: By default we init a bid 1 for sell offer
         self.id = id         # NOTE: this is id of the bid, NOT THE USER
         self.user = user     # Actual user object
         self.stock_id = stock_id
@@ -262,7 +273,7 @@ def resolve_cached_data(server):
 
     return data
 
-@app.route('/api/stocks/apple')
+@app.route('/api/stocks/apple', methods=['GET'])
 def get_stocks():
     data = resolve_cached_data(server)
     return jsonify(data)
@@ -461,7 +472,7 @@ def handle_bid_addition():
     stock_id = request.form.get("bidData.stock_id", "")
     amount = request.form.get("bidData.amount", "")
     price = request.form.get("bidData.price", "")
-    newBid = Bid(Server.query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price)
+    newBid = Order(Server.query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price)
 
     # TODO: Query next id from the database
 
@@ -500,4 +511,65 @@ def handle_bid_addition():
     # might also be the case when using sqlite
 
     return jsonify("success_bidAdded, Bid addition success: existing user added a bid!")
+
+@app.route('/api/stocks/sell', methods=['POST'])
+def handle_sell_addition():
+    userEmail = request.form.get("email", "")
+    userSub = request.form.get("sub", "")
+
+    # Convert user sub string to int
+    userSubNumber = int(userSub) # INFO: This is used as the user id
+
+    # Check if user is actually still logged in
+    # BUG: Currently, the frontend allows the user to easily attempt adding bids without logging in
+    # which is not wanted, we want the user to log in first before we allow them to place bids, 
+    # as we wouldn't be able to recognize who is making the bids otherwise
+    if userSubNumber != server.get_user_by_id(userSubNumber).id:
+        return jsonify("error_userNotLoggedIn, sell offer addition error: user is not logged in!")
+
+    # print("User id of the bid is: {}".format(userSub))
+    # User is surely logged in: Parse all the fields (of the bid) from the request form
+    user_id = request.form.get("sellData.user_id", "")
+    stock_id = request.form.get("sellData.stock_id", "")
+    amount = request.form.get("sellData.amount", "")
+    price = request.form.get("sellData.price", "")
+    newOffer = Order(Server.query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price, 1) # Init a sell offer
+
+    # TODO: Query next id from the database
+
+    # Convert back to string to remove possible sql injection
+    userSub = str(userSubNumber)
+
+    print("Handling offer addition for:")
+    print("Received email:" + userEmail)
+    print("Received sub:" + userSub)
+
+    # print("DATA: {}".format(request.form))
+    print("\nSELL OFFER DATA: \n==============\nuser_id: \
+            {}\nstock_id: {}\namount: {}\nprice: {}\n==============".\
+            format(repr(newOffer.user.id), newOffer.stock_id, newOffer.amount, newOffer.price))
+
+    # TODO: Investigate: does sqlite3 have a connection limit similar to MySQL/MariaDB or is just the
+    # OS concurrent file read limit
+    conn = sqlite3.connect('Database/Main.db')
+
+    # Make prepared statement instead of using raw sql
+    # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
+    cursor = conn.execute("INSERT INTO offers (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newOffer.id, str(newOffer.user.id), newOffer.stock_id, newOffer.amount, newOffer.price))
+
+    try:
+        conn.commit()
+    except:
+        cursor.close()
+        conn.close()
+        return jsonify("error_offerAddition, Bid addition error: failed to add offer to the database!")
+    finally:
+        cursor.close()
+        conn.close()
+
+    # TODO: Depending on what limits we have on the database we might want to keep connections open per logged in user 
+    # for performance reasons, closing a connection on a sql database is usually somewhat a costly operation so this
+    # might also be the case when using sqlite
+
+    return jsonify("success_offerAdded, Bid addition success: existing user added an offer!")
     

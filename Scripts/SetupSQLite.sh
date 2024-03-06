@@ -29,7 +29,18 @@ sqlite3 -line Database/Main.db "SELECT * FROM trades;"
 echo "=============================================="
 
 # Add some user owned stocks for user
+
+# Owns 69 stocks
 sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id, amount) VALUES ('115529453441494604337', '1', 69);"
+
+# Bids two stocks for 30 each
+sqlite3 -line Database/Main.db "INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (2, '115529453441494604337', 1, 2, 30);"
+
+# Owns 2 stocks
+sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id, amount) VALUES ('104294035584677999327', '1', 2);"
+
+# Trade between two users
+sqlite3 -line Database/Main.db "INSERT INTO trades (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES ('115529453441494604337', '104294035584677999327', 1, 30, 200, '0');"
 
 echo "User owned stocks: "
 sqlite3 -line Database/Main.db "SELECT * FROM user_owned_stocks;"
