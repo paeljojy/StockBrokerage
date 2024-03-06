@@ -35,14 +35,11 @@ export async function getBidsFromServer(credential: { email: string | Blob; sub:
         .then(data => {
             console.log("Whole response: ");
             console.log(data);
-
             console.log("Status code:" + data.status);
             console.log("Message: " + data.message);
             console.log(data.data);
 
-            const status = data.status;
-
-            switch (status) {
+            switch (data.status) {
                 case 0:
                     {
                         console.log("Get bids success on existing user!");

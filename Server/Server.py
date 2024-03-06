@@ -29,15 +29,17 @@ class Response:
         self.message = message
         self.data = data 
 
-    def getStatus(self):
+    def get_status(self):
         return self.status
 
-    def getMessage(self):
+    def get_message(self):
         return self.message
 
-    def getData(self):
+    def get_data(self):
         # Make the object into a dictionary for JSON conversion
         return self.__dict__
+    def jsonify(self):
+        return jsonify(self.__dict__)
 
 class Stock:
     id = -1
@@ -173,6 +175,7 @@ class StockTradeManager:
                     # TODO: Make this transactional
                     conn = sqlite3.connect('Database/Main.db')
                     # Remove the bid and the sell offer from the lists
+                    # cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id))
                     cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id))
                     try:
                         conn.commit()
@@ -440,7 +443,7 @@ def handle_logout_request():
 
     # Check if user is actually still logged in
     if userSubNumber != server.get_user_by_id(userSubNumber).id:
-        return jsonify("error_userNotLoggedIn, logout error: user is not logged in!")
+        return Response(1, "Logout error: user is not logged in!", "error").jsonify()
 
     # Convert back to string to remove possible sql injection
     userSub = str(userSubNumber)
@@ -466,7 +469,7 @@ def handle_logout_request():
     if len(users) == 0 or users[0][1] == 0:
         cursor.close()
         conn.close()
-        return jsonify("error_userNotFound, logout error: no user found!")
+        return Response(1, "Logout error: user is not logged in!", "error").jsonify()
 
     cursor = conn.execute("UPDATE logged_in_users SET logged_in = 0 WHERE sub = ?", (userSub,))
     conn.commit()
@@ -476,7 +479,7 @@ def handle_logout_request():
 
     del server.logged_in_users[userSubNumber]
     print("User with sub: {} logged out succesfully".format(userSubNumber))
-    return jsonify("success_existingUser, logout success: existing user!")
+    return Response(0, "Logout success: existing user!").jsonify()
     
 # INFO: Handles request to get all the bids for a stock
 @app.route('/api/stocks/bids', methods=['POST'])
@@ -502,8 +505,7 @@ def handle_get_bids_request():
         for row in cursor:
             bids.append(row)
         response = Response(0, "Fetch success: Successfully fetched bids from the server!", bids)
-        data = response.getData()
-        return jsonify(data)
+        return jsonify(response.get_data())
 
     except:
         cursor.close()

@@ -71,16 +71,14 @@ export default {
             console.log(rawData);
         },
         async fetchLastTradedPrice() {
-            this.currentStock = await getStocks();
+            this.currentStock = await getStocksFromServer();
             console.log(this.currentStock.last);
         },
         async get_database_data_from_server() {
             this.db = await getDB();
         },
         async sendLogoutRequest() {
-            // FIXME: This is temporary solution
-            const loggedOutSuccessFully = true;
-            await sendLogout(this.loginCredential);
+            const loggedOutSuccessFully = await sendLogout(this.loginCredential);
             if (loggedOutSuccessFully) {
                 // Clear localstorage 
                 localStorage.removeItem('isLoggedIn');
