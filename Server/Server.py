@@ -327,7 +327,7 @@ def hello_world():
     return "<p>Hello, World!</p>"
 
 def resolve_cached_data(server):
-    data = server.getCachedData()
+    data = server.get_cached_data()
     server.current_time = datetime.now()
 
     # If we have cached data and it's less than an hour old, return it
@@ -343,7 +343,7 @@ def resolve_cached_data(server):
     server.cached_data = data
     server.last_fetch_time = server.current_time
 
-    return data
+    return jsonify(data)
 
 @app.route('/api/stocks/apple', methods=['GET'])
 def get_stocks():

@@ -7,7 +7,7 @@ pushd "%~dp0.."
 @REM cd ..
 @REM node Server/dist/Server.js
 
-call Server\Scripts\activate.bat
+call Server\venv\Scripts\activate.bat
 flask --app Server\Server.py run
 
 popd 
