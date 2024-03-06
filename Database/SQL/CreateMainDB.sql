@@ -27,8 +27,11 @@ DROP TABLE IF EXISTS offers;
 -- TODO: Create user sell offers  
 CREATE TABLE offers(
 	id INTEGER NOT NULL,
-	user_id TEXT,
-	CONSTRAINT offers_pk PRIMARY KEY (id)
+	user_id TEXT NOT NULL,
+	stock_id INTEGER NOT NULL,
+	amount INTEGER NOT NULL,
+	price REAL NOT NULL,
+	CONSTRAINT offers_pk PRIMARY KEY (id, user_id, stock_id)
 );
 
 DROP TABLE IF EXISTS bids;
