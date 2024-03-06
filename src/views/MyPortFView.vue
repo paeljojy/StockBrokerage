@@ -3,7 +3,6 @@
 import { getStocksFromServer } from '../stocks/StocksAPI.ts'
 import { ref } from 'vue';
 
-
 export default {
     data() {
         return {

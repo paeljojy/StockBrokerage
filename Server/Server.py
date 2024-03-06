@@ -24,7 +24,7 @@ class Response:
     message = ''
     data = None
 
-    def __init__(self, status, message, data):
+    def __init__(self, status = -1, message = '', data = None):
         self.status = status
         self.message = message
         self.data = data 
@@ -38,6 +38,27 @@ class Response:
     def getData(self):
         # Make the object into a dictionary for JSON conversion
         return self.__dict__
+
+class Stock:
+    id = -1
+    name = ""
+    price = -1
+    fetched_time = None
+
+    def __init__(self, id = -1, name = '', price = -1, fetched_time = 0):
+        self.id = id
+        self.name = name
+        self.price = price
+        self.fetched_time = fetched_time
+
+    def __hash__(self):
+        return hash((self.id, self.name))
+
+    def __eq__(self, other):
+        return (self.id, self.name) == (other.id, other.name)
+
+    def is_valid(self):
+        return self.id != -1
 
 # INFO: Manages stock trades, bids and sell offers
 # it can be used to add, remove, update and get trades
@@ -55,19 +76,72 @@ class StockTradeManager:
     # unless the stock price has just changed, that's why we keep track of them on the server
     bids = []       # Bids that are waiting to be matched with sell offers
     sell_offers = [] # Sell offers that are waiting to be matched with bids
-    current_stock_price = 0 # The current stock price of the current stock that is being traded NOTE: this should be set to the price of the stock that is being traded before update is called
+    # current_stock = None # The current stock price of the current stock that is being traded NOTE: this should be set to the price of the stock that is being traded before update is called
+    current_stock = -1.0 # The current stock price of the current stock that is being traded NOTE: this should be set to the price of the stock that is being traded before update is called
 
     def __init__(self):
         self.trades = []
-
         self.bids = []
         self.sell_offers = []
+
+        # Query the database for the current stock price
+        conn = sqlite3.connect('Database/Main.db')
+        # Fetch apple stock price
+        cursor = conn.execute("SELECT * FROM stocks")
+        # stock = cursor.fetchone()[0]
+
+        # TODO: Use a stock object atm we just the stock price float 
+        stocks = []
+        for row in cursor:
+            stocks.append(row)
+        stock = stocks[0]
+        # self.current_stock = Stock(stock[0], stock[1], stock[2], stock[3])
+
+        # TODO: Get the current stock price from the REST API if the time since the last fetch is greater than 1 hour etc.
+
+        # if (self.current_stock == Stock()):
+        #     print("ERROR: Failed to fetch the current stock price from the database!")
+        self.current_stock = stock[2]
+
+        # Query the database for bids
+        cursor = conn.execute("SELECT * FROM BIDS")
+        bids = []
+        for row in cursor:
+            bids.append(row)
+        cursor.close()
+
+        # Query the database for sell offers
+        cursor = conn.execute("SELECT * FROM OFFERS")
+        sell_offers = []
+        for row in cursor:
+            sell_offers.append(row)
+
+        # Query the database for trades
+        cursor = conn.execute("SELECT * FROM TRADES")
+        trades = []
+        for row in cursor:
+            trades.append(row)
+
+        # Clean up
+        cursor.close()
+        conn.close()
 
     # Adds a new trade to the trades list
     # NOTE: This is called when a bid is matched with a sell offer with a valid price
     # and a transaction has been made
-    def add_trade(self):
-        pass
+    def add_trade(self, bid, sellOffer, time):
+        # TODO: Insert into database
+
+        conn = sqlite3.connect('Database/Main.db')
+        cursor = conn.execute("INSERT INTO TRADES (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES (?, ?, ?, ?, ?)", (bid.user_id, sellOffer.sellers_user_id, bid.stock_id, bid.amount, bid.price, time))
+
+        try:
+            conn.commit()
+        except:
+            print("ERROR: Failed to add trade to the database!")
+        finally:
+            cursor.close()
+            conn.close()
 
     # Adds a new sell offer and updates
     def add_offer(self, newOffer):
@@ -85,10 +159,14 @@ class StockTradeManager:
     # based on the newest stock market price
     def update(self):
         for bid in self.bids:
-            for sellOffer in self.sell_offers:
+            for sell_offer in self.sell_offers:
+                # Early exit if the bid and sell offer user_id is the same (user would be buying from themselves)
+                if sell_offer.user_id == bid.user_id:
+                    continue
+
                 # TODO: (Pate 󰯈 ) Check against the market price that this is not more than ±10% of the market price
                 # Match the bid with the sell offer
-                if bid.price + bid.price * .1 >= sellOffer.price:
+                if bid.price >= sell_offer.price:
                     # TODO: (Pate 󰯈 ) We should split the sell offer if the amount is greater than the bid amount here
 
                     # NOTE: We have a chance to duplicate a stock here if the server would crash during this
@@ -108,11 +186,12 @@ class StockTradeManager:
                     # Get time for the trade
                     time = datetime.now()
 
+                    self.add_trade(bid, sell_offer, time)
+
                     # Add a new trade to the trades list
-                    # TODO: (Pate 󰯈 ) The buyers_user_id and sellers_user_id might be the other way around
                     # TODO: We should split the sell offer if the amount is greater than the bid amount
-                    cursor = conn.execute("INSERT INTO TRADES (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES (?, ?, ?, ?, ?)", (bid.user_id, sellOffer.sellers_user_id, bid.stock_id, bid.amount, bid.price, time))
-                    conn.commit()
+
+                    # conn.commit()
 
 class User:
     # NOTE: User is not valid if the id is -1
@@ -179,14 +258,13 @@ class Server():
         # 4. Fetch the bids from the database
         # 5. Fetch the sell offers from the database
 
-
         # TODO: 1. Fetch the stock data from the REST API
 
         # 2. Fetch logged in users
         conn = sqlite3.connect('Database/Main.db')
         # cursor = conn.execute("SELECT * FROM logged_in_users WHERE logged_in = 1")
         # NOTE: sub is the user id
-        cursor = conn.execute("SELECT sub, first_name, last_name, email FROM users WHERE sub IN (SELECT sub FROM logged_in_users)")
+        cursor = conn.execute("SELECT sub, first_name, last_name, email FROM users WHERE sub IN (SELECT sub FROM logged_in_users WHERE logged_in = 1);")
 
         # SELECT name FROM users WHERE user_id IN (SELECT user_id FROM logged_in_users);
 
@@ -199,14 +277,8 @@ class Server():
             #  NOTE: in order: user.id, user.first_name, user.last_name, user.email (look into sql query to see the order)
             self.logged_in_users[int(user[0])] = User(user[0], user[1], user[2], user[3])
 
-        # conn = sqlite3.connect('Database/Main.db')
-        # cursor = conn.execute("SELECT * FROM trades")
-        # trades = []
-        # for row in cursor:
-        #     trades.append(row)
-        # cursor.close()
-        # conn.close()
-        # return jsonify(trades)
+        # Init the stock trade manager NOTE: This will fetch the current stock trader state from the database
+        self.stock_trade_manager = StockTradeManager()
 
         # Clean up
         cursor.close()
@@ -255,7 +327,7 @@ def hello_world():
     return "<p>Hello, World!</p>"
 
 def resolve_cached_data(server):
-    data = server.getCachedData()
+    data = server.get_cached_data()
     server.current_time = datetime.now()
 
     # If we have cached data and it's less than an hour old, return it
@@ -271,7 +343,7 @@ def resolve_cached_data(server):
     server.cached_data = data
     server.last_fetch_time = server.current_time
 
-    return data
+    return jsonify(data)
 
 @app.route('/api/stocks/apple', methods=['GET'])
 def get_stocks():
@@ -318,7 +390,7 @@ def handle_login_request():
 
     # Check if user is already logged in
     if userSubNumber == server.get_user_by_id(userSubNumber).id:
-        return jsonify("error_alreadyLoggedIn, logout error: user is already logged in!")
+        return jsonify("error_alreadyLoggedIn, login error: user is already logged in!")
 
     conn = sqlite3.connect('Database/Main.db')
 
@@ -395,6 +467,9 @@ def handle_logout_request():
         cursor.close()
         conn.close()
         return jsonify("error_userNotFound, logout error: no user found!")
+
+    cursor = conn.execute("UPDATE logged_in_users SET logged_in = 0 WHERE sub = ?", (userSub,))
+    conn.commit()
 
     cursor.close()
     conn.close()
@@ -498,6 +573,7 @@ def handle_bid_addition():
 
     try:
         conn.commit()
+        server.stock_trade_manager.add_bid(newBid)
     except:
         cursor.close()
         conn.close()
@@ -559,6 +635,7 @@ def handle_sell_addition():
 
     try:
         conn.commit()
+        server.stock_trade_manager.add_offer(newOffer)
     except:
         cursor.close()
         conn.close()

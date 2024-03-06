@@ -38,5 +38,5 @@ Session.vim
 package-lock.json
 
 # python venv and temp files
-.venv/
+venv/
 __pycache__/

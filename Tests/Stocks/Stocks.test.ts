@@ -1,11 +1,13 @@
 import { expect } from 'vitest'
 
-import { getStocks } from '../../src/stocks/Stocks.ts'
+import { getStocksFromServer } from '../../src/stocks/StocksAPI.ts'
+
+/* import { getStocks } from '../../src/stocks/Stocks.ts' */
 import { test } from 'vitest';
 
 test('getStocks', async () => {
     /* console.log("hue"); */
-    const data = await getStocks();
+    const data = await getStocksFromServer();
 
     // Check that the data is not null or undefined
     expect(data).not.toBeNull();
