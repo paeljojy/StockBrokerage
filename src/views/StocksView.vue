@@ -111,8 +111,15 @@ export default {
             // and is actually logged in, this will probably only be a temporary solution
             // as we want the final application to force the user to log in
             // before even be able to navigate to the stock page (or even show it)
+            try {
             const bids = getBidsFromServer(this.loginCredential);
-
+            
+            this.bidDataList = bids;
+            console.log("Received bids:", bids);
+            
+            } catch (error) {
+                console.error("Error fetching bids:", error);
+            }
             // TODO: (Jonna) Populate the bids list and update the UI
 
         },
