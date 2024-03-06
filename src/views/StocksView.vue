@@ -176,6 +176,18 @@ export default {
             </header>
             <section class="chart">
                 <!-- CHART -->
+                <h2>Bid:</h2>
+                <!-- Display each bidData item -->
+                <div v-for="(bidDataItem, index) in bidDataList" :key="index">
+                    <p>User ID: {{ bidDataItem.user_id }} Stock ID: {{ bidDataItem.stock_id }} Amount: {{ bidDataItem.amount }} Price: {{ bidDataItem.price }}</p>
+                <hr>
+                </div>
+                <h2>Sell:</h2>
+                <!-- Display each sellData item -->
+                <div v-for="(sellDataItem, index) in sellDataList" :key="index">
+                    <p>User ID: {{ sellDataItem.user_id }} Stock ID: {{ sellDataItem.stock_id }} Amount: {{ sellDataItem.amount }} Price: {{ sellDataItem.price }}</p>
+                <hr>
+                </div>
             </section>
             <div class="trade-controls" v-if="isUserLoggedIn">
                 <div class="input-group">
