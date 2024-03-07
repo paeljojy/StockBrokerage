@@ -86,9 +86,9 @@ class StockTradeManager:
     current_stock = -1.0 # The current stock price of the current stock that is being traded NOTE: this should be set to the price of the stock that is being traded before update is called
 
     def __init__(self):
-        self.trades = []
-        self.bids = []
-        self.sell_offers = []
+        self.trades = {}
+        self.bids = {}
+        self.sell_offers = {}
 
         # Query the database for the current stock price
         conn = sqlite3.connect('Database/Main.db')
@@ -116,11 +116,17 @@ class StockTradeManager:
             bids.append(row)
         cursor.close()
 
+        for bid in bids:
+            self.bids[bid[0]] = Order(bid[0], bid[1], bid[2], bid[3], bid[4])
+
         # Query the database for sell offers
         cursor = conn.execute("SELECT * FROM OFFERS")
         sell_offers = []
         for row in cursor:
             sell_offers.append(row)
+
+        for sell_offer in sell_offers:
+            self.sell_offers[sell_offer[0]] = Order(sell_offer[0], sell_offer[1], sell_offer[2], sell_offer[3], sell_offer[4])
 
         # Query the database for trades
         cursor = conn.execute("SELECT * FROM TRADES")
@@ -128,6 +134,9 @@ class StockTradeManager:
         for row in cursor:
             trades.append(row)
 
+        for trade in trades:
+            self.trades[trade[0]] = Order(trade[0], trade[1], trade[2], trade[3], trade[4], trade[5])
+        
         # Clean up
         cursor.close()
         conn.close()
@@ -352,10 +361,10 @@ def resolve_cached_data(server):
 
     return jsonify(data)
 
-@app.route('/api/stocks/apple', methods=['GET'])
+@app.route('/api/stocks/apple', methods=['POST'])
 def get_stocks():
     data = resolve_cached_data(server)
-    return jsonify(data)
+    return Response(0, "Fetch success: Successfully fetched stock data from the server!", data).jsonify()
 
 # INFO: Rest api for getting all the made trades
 @app.route('/api/stocks/public/trades')
@@ -380,7 +389,6 @@ def get_db():
     conn.close()
     return jsonify(list)
 
-
 # INFO: Handles log in requests from clients
 # StatusCodes: 
 # 0 = success
@@ -393,6 +401,9 @@ def handle_login_request():
     first_name = request.form.get("first_name", "")
     last_name = request.form.get("last_name", "")
 
+    if userSub == 'undefined':
+        return Response(0, "Login success: user is already logged in!").jsonify()
+
     # Convert user sub string to int and back to string to remove possible sql injection
     userSubNumber = int(userSub)
     userSub = str(userSubNumber)
@@ -402,7 +413,7 @@ def handle_login_request():
 
     # Check if user is already logged in
     if userSubNumber == server.get_user_by_id(userSubNumber).id:
-        return Response(1, "Login success: user is already logged in!").jsonify()
+        return Response(0, "Login success: user is already logged in!").jsonify()
 
     conn = sqlite3.connect('Database/Main.db')
 
@@ -590,8 +601,8 @@ def handle_bid_addition():
         conn.commit()
         server.stock_trade_manager.add_bid(newBid)
     except:
-        cursor.close()
-        conn.close()
+        # cursor.close()
+        # conn.close()
         return jsonify("error_bidAddition, Bid addition error: failed to add bid to the database!")
     finally:
         cursor.close()

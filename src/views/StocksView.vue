@@ -62,16 +62,11 @@ export default {
     },
     methods: {
         async fetchStocks() {
-            this.stocks = await getStocksFromServer();
+            this.stocks = await getStocksFromServer(this.loginCredential);
             console.log(this.stocks);
-            let rawData = this.stocks;
-            if (isProxy(this.stocks)){
-                rawData = toRaw(this.stocks)
-            }
-            console.log(rawData);
         },
         async fetchLastTradedPrice() {
-            this.currentStock = await getStocksFromServer();
+            this.currentStock = await getStocksFromServer(this.loginCredential);
             console.log(this.currentStock.last);
         },
         async get_database_data_from_server() {
@@ -104,7 +99,7 @@ export default {
             localStorage.setItem('isLoggedIn', 'true');
             localStorage.setItem('loginCredential', JSON.stringify(credential));
 
-            const ret = sendLogin(decodeCredential(response.credential));
+            const ret = sendLogin(this.loginCredential);
             console.log("Send Login responded: " + ret);
             this.isUserLoggedIn = true;
         },
@@ -158,6 +153,9 @@ export default {
         }
     },
     mounted() {
+        // TODO: Ask server if the user is logged in
+        sendLogin(this.loginCredential).then(teppo => console.log("")).then(value => this.isUserLoggedIn = value);
+
         this.fetchLastTradedPrice();
 
         if (this.isUserLoggedIn)

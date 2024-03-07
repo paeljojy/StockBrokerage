@@ -9,13 +9,23 @@ export async function getDB(): Promise<any> {
     return data;
 }
 
-export async function getStocksFromServer(): Promise<any> {
+export async function getStocksFromServer(credential: { email: string | Blob; sub: string | Blob; }): Promise<any> {
     console.log("getStocks() called on frontend!");
-    const response = await fetch('http://localhost:5000/api/stocks/apple');
-    const jsonData = await response.json();
-    // console.log(response);
-    console.log(jsonData);
-    return jsonData;
+    const formData = new FormData();
+    formData.append('email', credential.email);
+    formData.append('sub', credential.sub);
+
+    const data = fetch('http://localhost:5000/api/stocks/apple', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            return data.data;
+        }
+        );
+    return data;
 }
 
 // INFO: Requests all the current bids (this includes the user's own bids) from the server
@@ -43,7 +53,7 @@ export async function getBidsFromServer(credential: { email: string | Blob; sub:
                 case 0:
                     {
                         console.log("Get bids success on existing user!");
-                        return data;
+                        return data.data;
                     }
                 case 1:
                     {
@@ -58,7 +68,7 @@ export async function getBidsFromServer(credential: { email: string | Blob; sub:
 
 // INFO: Sends a login request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
-export async function sendLogin(credential: { email: string | Blob; sub: string, first_name: string, last_name: string | Blob; }): Promise<any> {
+export async function sendLogin(credential: { email: string | Blob; sub: string, first_name: string, last_name: string | Blob; }): Promise<boolean> {
     console.log("sendLogin() called on frontend!");
     console.log("Credentials:");
     console.log(credential);
@@ -68,6 +78,7 @@ export async function sendLogin(credential: { email: string | Blob; sub: string,
     formData.append('sub', credential.sub);
     formData.append('first_name', credential.first_name);
     formData.append('last_name', credential.last_name);
+
     const data = fetch("http://localhost:5000/api/auth/login", {
         method: 'POST',
         body: formData
@@ -75,32 +86,42 @@ export async function sendLogin(credential: { email: string | Blob; sub: string,
         .then(response => response.json())
         .then(data => {
             console.log("Whole response: " + data);
-            const status = data.split(',')[0]
-            console.log("status is \"" + status + "\"");
+            console.log("status is \"" + data.status + "\"");
+            console.log("message is \"" + data.message + "\"");
 
             // TODO: Use response codes instead of strings
-            switch (status) {
-                case "success_existingUser":
+            switch (data.status) {
+                case 0:
                     {
                         console.log("Login successful on existing user!");
-                        return "";
+                        return true;
                     }
-                case "success_newUser":
+                case 1:
                     {
-                        console.log("Login successful on new user!"); break;
+                        console.log("Login erorr on new user!");
+                        return false;
                     }
-                case "error_newUser":
-                    {
-                        console.log("Login failed on new user!"); break;
-                    }
-                case "error_existingUser":
-                    {
-                        console.log("Login failed on existing user!"); break;
-                    }
+                /* case "success_existingUser": */
+                /*     { */
+                /*         console.log("Login successful on existing user!"); */
+                /*         return ""; */
+                /*     } */
+                /* case "success_newUser": */
+                /*     { */
+                /*         console.log("Login successful on new user!"); break; */
+                /*     } */
+                /* case "error_newUser": */
+                /*     { */
+                /*         console.log("Login failed on new user!"); break; */
+                /*     } */
+                /* case "error_existingUser": */
+                /*     { */
+                /*         console.log("Login failed on existing user!"); break; */
+                /*     } */
             }
         }
         );
-    return data;
+    return false;
 }
 
 // INFO: Sends a logout request to the server and returns the response to the caller (most likely frontend)
