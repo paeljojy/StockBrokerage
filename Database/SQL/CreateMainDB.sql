@@ -63,6 +63,9 @@ CREATE TABLE stocks(
 -- Insert Apple stock for testing
 INSERT INTO stocks (id, name, current_price, fetched_at) VALUES (1, 'Apple, Inc', 1337.00, '0');
 
+-- Update Apple stock price and time to more recent time and resonable price for an Apple Stock l0l
+UPDATE stocks SET current_price = 1, fetched_at = '1992-12-01 23:21:09.320323' WHERE id = 1;
+
 DROP TABLE IF EXISTS user_owned_stocks;
 
 -- Create user owned stocks

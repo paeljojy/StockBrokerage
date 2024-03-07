@@ -83,7 +83,7 @@ class StockTradeManager:
     bids = []       # Bids that are waiting to be matched with sell offers
     sell_offers = [] # Sell offers that are waiting to be matched with bids
     # current_stock = None # The current stock price of the current stock that is being traded NOTE: this should be set to the price of the stock that is being traded before update is called
-    current_stock = -1.0 # The current stock price of the current stock that is being traded NOTE: this should be set to the price of the stock that is being traded before update is called
+    current_stock = float(0.0) # The current stock price of the current stock that is being traded NOTE: this should be set to the price of the stock that is being traded before update is called
 
     def __init__(self):
         self.trades = {}
@@ -107,7 +107,39 @@ class StockTradeManager:
 
         # if (self.current_stock == Stock()):
         #     print("ERROR: Failed to fetch the current stock price from the database!")
-        self.current_stock = stock[2]
+
+        try:
+            self.current_stock = float(stock[2])
+        except ValueError:
+            print(f"Cannot convert '{stock[2]}' to float")
+
+        # self.current_stock = float(stock[2])
+        print("Current stock price: ${}".format(self.current_stock))
+
+        # Check that the stock price is fetched within the last hour
+        # if not, fetch the stock price from the REST API and update the current stock price
+        time = datetime.now() # NOTE: We fetch time here to avoid any possible time differences between the stock price and the time we fetch it as this might take time
+
+        # Convert the fetched time to a datetime object
+        stock_time = datetime.strptime(str(stock[3]), '%Y-%m-%d %H:%M:%S.%f')
+
+        # TODO: Init a timer with an event that will update the stock price every hour
+        # Check if the stock price is fetched within the last hour
+        if (time - stock_time).total_seconds() > 3600:
+        # if True:
+            # Fetch the stock price from the REST API
+            res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
+            data = res.json()
+
+            # Update the current stock price
+            try:
+                self.current_stock = float(data['last'][0])
+            except ValueError:
+                print(f"Cannot convert '{stock[2]}' to float")
+
+            cursor = conn.execute("UPDATE stocks SET current_price = ?, fetched_at = ? WHERE id = ?", (self.current_stock, time, int(stock[0])))
+            conn.commit()
+            print("Updated current stock price: ${} and time: {}".format(self.current_stock, time))
 
         # Query the database for bids
         cursor = conn.execute("SELECT * FROM BIDS")
@@ -165,6 +197,95 @@ class StockTradeManager:
 
     # Adds a new bid and updates
     def add_bid(self, newBid):
+        # Search for possible trades (possible sell offers to match)
+        # NOTE: To match the price has to be equal or lower than what we are offering in the bid
+        # and the lowest price is matched first
+        # if we have multiple sell offers with the same price
+        # we take the oldest one first
+        # you are able to only sell one or more stocks at the time
+        possibly_matching_sell_offers = []
+        for sell_offer in self.sell_offers:
+            if newBid.price >= sell_offer.price:
+                # Found possible trade
+                possibly_matching_sell_offers.append(sell_offer)
+
+        if len(possibly_matching_sell_offers) < 1:
+            # No possible trades
+            # Add the bid to the list and return
+            self.bids[newBid.id] = newBid
+            return
+
+        # We have a possible trade
+        # Sort the possible sell offers by price and time
+        # NOTE: We want to match the lowest sell price so we sort the prices in ascending order
+        possibly_matching_sell_offers.sort(key=lambda x: (x.price, x.fetched_time)) # Sort by price and then time
+
+        # Match the bid with the sell offer
+        # NOTE: First one is the lowest price and the oldest one
+        for possibly_matching_sell_offer in possibly_matching_sell_offers:
+            # We now have a valid trade 
+            # Check how many stocks the sell offer has
+            stocks_in_sell_offer = possibly_matching_sell_offer.amount
+
+            # NOTE: We can open a new database connection as we are going to need to change something at this point
+            conn = sqlite3.connect('Database/Main.db')
+
+            # If the sell offer has more stocks than the bid
+            # aka. we overflow the sell offer
+            if stocks_in_sell_offer > newBid.amount:
+                # We have to split the sell offer into two sell offers
+                fullfilling_offer = Order(possibly_matching_sell_offer.id, 
+                                          possibly_matching_sell_offer.user, 
+                                          possibly_matching_sell_offer.stock_id, 
+                                          newBid.amount, possibly_matching_sell_offer.price, 
+                                          1) # Create a new sell offer with the remaining stocks
+
+                remaining_offer = Order(Server.query_next_bid_id(), 
+                                        possibly_matching_sell_offer.user, 
+                                        possibly_matching_sell_offer.stock_id, 
+                                        possibly_matching_sell_offer.amount - newBid.amount, # Calc the remaining stocks
+                                        possibly_matching_sell_offer.price, 
+                                        1) # Create a new sell offer that has the remaining stocks, we need a new id for this
+
+                # Remove the bid and the sell offer from the lists
+                cursor = conn.execute("DELETE FROM bids WHERE id = ?", (newBid.id))
+                try:
+                    conn.commit()
+
+                    # Remove the sell offer
+                    cursor = conn.execute("DELETE FROM offers WHERE id = ?", (fullfilling_offer.id, ))
+                    conn.commit()
+
+                    # TODO:We should insert the trade into the database here
+                    cursor = conn.execute("INSERT INTO trades (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newBid.id, newBid.user.id, newBid.stock_id, newBid.amount, newBid.price))
+                    conn.commit()
+
+                    # Add a new offer to offers table
+                    cursor = conn.execute("INSERT INTO offers (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (remaining_offer.id, remaining_offer.user.id, remaining_offer.stock_id, remaining_offer.amount, remaining_offer.price))
+                    conn.commit()
+
+                except:
+                    print("ERROR: Failed to add trade to the database!")
+
+                finally:
+                    cursor.close()
+                    conn.close()
+
+                # Get time for the trade
+                time = datetime.now()
+
+                # Add a new trade to the trades list
+                self.add_trade(newBid, fullfilling_offer, time)
+
+                # and then add the remaining stock offer to the sell offers list
+                self.add_offer(remaining_offer)
+                
+            # Sell offer has the equal or less amount of stocks than the bid
+            # If the sell offer has less or equal amount of stocks than the bid
+            else:
+                print("Offer has equal amount of stocks or less than the bid")
+
+
         self.bids[newBid.id] = newBid
         self.update()
 
@@ -172,42 +293,50 @@ class StockTradeManager:
     # and when bids or sell offers are added 
     # This will update the whole system and match bids with sell offers if possible
     # based on the newest stock market price
+    # TODO: We should have a parameter that indicates if the update is done after
+    # a stock market price change
+    # as if this happens, we might have bids and sell offers that are outside of the ±10% price diviation
     def update(self):
-        for bid in self.bids:
-            for sell_offer in self.sell_offers:
-                # Early exit if the bid and sell offer user_id is the same (user would be buying from themselves)
-                if sell_offer.user_id == bid.user_id:
-                    continue
+        # TODO: implement this
+        if (False):
+            for bid in self.bids:
+                for sell_offer in self.sell_offers:
+                    # Early exit if the bid and sell offer user_id is the same (user would be buying from themselves)
+                    if sell_offer.user_id == bid.user_id:
+                        continue
 
-                # TODO: (Pate 󰯈 ) Check against the market price that this is not more than ±10% of the market price
-                # Match the bid with the sell offer
-                if bid.price >= sell_offer.price:
-                    # TODO: (Pate 󰯈 ) We should split the sell offer if the amount is greater than the bid amount here
+                    # TODO: (Pate 󰯈 ) Check against the market price that this is not more than ±10% of the market price
+                    # Match the bid with the sell offer
+                    
+                    # If the bid price is greater than or equal to the sell offer price
+                    # we have a valid trade
+                    if bid.price >= sell_offer.price:
+                        # TODO: (Pate 󰯈 ) We should split the sell offer if the amount is greater than the bid amount here
 
-                    # NOTE: We have a chance to duplicate a stock here if the server would crash during this
-                    # TODO: Make this transactional
-                    conn = sqlite3.connect('Database/Main.db')
-                    # Remove the bid and the sell offer from the lists
-                    # cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id))
-                    cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id))
-                    try:
-                        conn.commit()
-                    except:
-                        pass
+                        # NOTE: We have a chance to duplicate a stock here if the server would crash during this
+                        # TODO: Make this transactional
+                        conn = sqlite3.connect('Database/Main.db')
+                        # Remove the bid and the sell offer from the lists
+                        # cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id))
+                        cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id))
+                        try:
+                            conn.commit()
+                        except:
+                            pass
 
-                    finally:
-                        cursor.close()
-                        conn.close()
+                        finally:
+                            cursor.close()
+                            conn.close()
 
-                    # Get time for the trade
-                    time = datetime.now()
+                        # Get time for the trade
+                        time = datetime.now()
 
-                    self.add_trade(bid, sell_offer, time)
+                        self.add_trade(bid, sell_offer, time)
 
-                    # Add a new trade to the trades list
-                    # TODO: We should split the sell offer if the amount is greater than the bid amount
+                        # Add a new trade to the trades list
+                        # TODO: We should split the sell offer if the amount is greater than the bid amount
 
-                    # conn.commit()
+                        # conn.commit()
 
 class User:
     # NOTE: User is not valid if the id is -1
@@ -248,6 +377,7 @@ class Order:
 
         self.amount = amount
         self.price = price
+        self.order_type = order_type
 
 class SellOffer:
     def __init__(self, id, user):
@@ -274,13 +404,13 @@ class Server():
         # 4. Fetch the bids from the database
         # 5. Fetch the sell offers from the database
 
-        # TODO: 1. Fetch the stock data from the REST API
+        conn = sqlite3.connect('Database/Main.db')
 
         # 2. Fetch logged in users
-        conn = sqlite3.connect('Database/Main.db')
         # cursor = conn.execute("SELECT * FROM logged_in_users WHERE logged_in = 1")
         # NOTE: sub is the user id
         cursor = conn.execute("SELECT sub, first_name, last_name, email FROM users WHERE sub IN (SELECT sub FROM logged_in_users WHERE logged_in = 1);")
+        conn.commit()
 
         # SELECT name FROM users WHERE user_id IN (SELECT user_id FROM logged_in_users);
 
@@ -515,7 +645,7 @@ def handle_get_bids_request():
 
     if userSubNumber != server.get_user_by_id(userSubNumber).id:
         return jsonify("error_userNotLoggedIn, Failed to get bids from server error: user is not logged in!")
-        return Response(1, "")
+        # return Response(1, "")
 
     conn = sqlite3.connect('Database/Main.db')
     # TODO: (Anyone) Link the user id with user name so the users don't see their or other's user ids'
@@ -565,14 +695,29 @@ def handle_bid_addition():
     # which is not wanted, we want the user to log in first before we allow them to place bids, 
     # as we wouldn't be able to recognize who is making the bids otherwise
     if userSubNumber != server.get_user_by_id(userSubNumber).id:
-        return jsonify("error_userNotLoggedIn, bid addition error: user is not logged in!")
+        return Response(1, "Bid addition error: user is not logged in!", "error").jsonify()
+        # return jsonify("error_userNotLoggedIn, bid addition error: user is not logged in!")
 
     # print("User id of the bid is: {}".format(userSub))
     # User is surely logged in: Parse all the fields (of the bid) from the request form
     user_id = request.form.get("bidData.user_id", "")
     stock_id = request.form.get("bidData.stock_id", "")
     amount = request.form.get("bidData.amount", "")
+    amount = int(amount)
+    # FIXME: Use different status code in the response to indicate different problems with the bid
+    # addition so we can display correct messages to the user
+    # this could also be done by setting limits in the input boxes
+    # because in that way we don't tell the client about how the server is handling the sent data
+    if (amount < 1):
+        return Response(1, "The user has to sell at least one stock!", "error").jsonify()
+
     price = request.form.get("bidData.price", "")
+    price = float(price)
+
+    # Check that the bid price is ±10% of the current market price of the stock
+    if not (abs(price - server.stock_trade_manager.current_stock) <= server.stock_trade_manager.current_stock * 0.1):
+        return Response(1, "Price is outside the allowed range!", "error").jsonify()
+
     newBid = Order(Server.query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price)
 
     # TODO: Query next id from the database

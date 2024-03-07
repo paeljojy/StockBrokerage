@@ -220,14 +220,19 @@ export async function sendBidAdditionRequest(credential: { email: string | Blob;
         .then(response => response.json())
         .then(data => {
             console.log("Whole response: " + data);
-            const status = data.split(',')[0]
-            console.log("status is \"" + status + "\"");
+            console.log("status is \"" + data.status + "\"");
+            console.log("message is \"" + data.message + "\"");
 
-            switch (status) {
-                case "success_existingUser":
+            switch (data.status) {
+                case 0:
                     {
                         console.log("Able to add bid on existing user!");
                         return true;
+                    }
+                case 1:
+                    {
+                        console.log("Unable to add bid on existing user!");
+                        return false;
                     }
                 // FIXME: Handle logout errors
                 /* case "success_newUser": */
