@@ -153,7 +153,8 @@ export default {
         }
     },
     mounted() {
-        // TODO: Ask server if the user is logged in
+        // FIXME: Ask server if the user is logged in
+        // this doesn't work atm as the promise returned by this function is not awaited?
         sendLogin(this.loginCredential).then(teppo => console.log("")).then(value => this.isUserLoggedIn = value);
 
         this.fetchLastTradedPrice();
@@ -229,7 +230,9 @@ export default {
         <div>
             <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
             <button @click="sendLogoutRequest" v-if="isUserLoggedIn">Log out</button>
-            <GoogleLogin :callback="sendLoginRequest" v-if="!isUserLoggedIn"/>
+            <!-- <div id="login-button"> -->
+                <GoogleLogin id="login-button" :callback="sendLoginRequest" v-if="!isUserLoggedIn"/>
+            <!-- </div> -->
         </div>
         <!-- <div> -->
         <!--     <input type="sendLoginRequest" v-model="email" /> -->

@@ -5,12 +5,15 @@ export async function getDB(): Promise<any> {
     const data = fetch('http://localhost:5000/api/getdb')
         /* fetch('http://localhost:3000/') */
         .then(response => response.json())
-        .then(data => console.log(data));
+        .then(data => {
+            console.log(data);
+            return data.data
+        });
     return data;
 }
 
 export async function getStocksFromServer(credential: { email: string | Blob; sub: string | Blob; }): Promise<any> {
-    console.log("getStocks() called on frontend!");
+    console.log("getStocksFromServer() called on frontend!");
     const formData = new FormData();
     formData.append('email', credential.email);
     formData.append('sub', credential.sub);
@@ -21,10 +24,27 @@ export async function getStocksFromServer(credential: { email: string | Blob; su
     })
         .then(response => response.json())
         .then(data => {
-            console.log(data)
+            /* console.log(data) */
             return data.data;
-        }
-        );
+        });
+    return data;
+}
+
+export async function getTradesFromServer(credential: { email: string | Blob; sub: string | Blob; }): Promise<any> {
+    console.log("getTradesFromServer() called on frontend!");
+    const formData = new FormData();
+    formData.append('email', credential.email);
+    formData.append('sub', credential.sub);
+
+    const data = fetch('http://localhost:5000/api/stocks/trades', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            /* console.log(data) */
+            return data.data;
+        });
     return data;
 }
 

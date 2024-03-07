@@ -160,12 +160,12 @@ class StockTradeManager:
 
     # Adds a new sell offer and updates
     def add_offer(self, newOffer):
-        self.sell_offers.append(newOffer)
+        self.sell_offers[newOffer.id] = newOffer
         self.update()
 
     # Adds a new bid and updates
     def add_bid(self, newBid):
-        self.bids.append(newBid)
+        self.bids[newBid.id] = newBid
         self.update()
 
     # General update that is used whenever a new stock price is fetched 

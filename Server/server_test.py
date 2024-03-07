@@ -7,5 +7,12 @@ class ResponseObject(unittest.TestCase):
         self.assertEqual(0, response.get_status())
         self.assertEqual("test_string", response.get_message())
 
+
+
+
+
+
+
+
 if __name__ == '__main__':
     unittest.main()
