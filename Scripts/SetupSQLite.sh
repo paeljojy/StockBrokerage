@@ -12,22 +12,6 @@ sqlite3 -line Database/Main.db "INSERT INTO users (sub, email, first_name, last_
 
 sqlite3 -line Database/Main.db "INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (1, '1', '1', 30, 30);"
 
-echo "Users: "
-sqlite3 -line Database/Main.db "SELECT * FROM users;"
-echo "=============================================="
-
-echo "Stocks: "
-sqlite3 -line Database/Main.db "SELECT * FROM stocks;"
-echo "=============================================="
-
-echo "Bids: "
-sqlite3 -line Database/Main.db "SELECT * FROM bids;"
-echo "=============================================="
-
-echo "Trades: "
-sqlite3 -line Database/Main.db "SELECT * FROM trades;"
-echo "=============================================="
-
 # Add some user owned stocks for user
 
 # Owns 69 stocks
@@ -42,8 +26,29 @@ sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id
 # User 2 sells 2 stocks
 sqlite3 -line Database/Main.db "INSERT INTO offers (id, user_id, stock_id, amount, price) VALUES (1, '104294035584677999327', 1, 2, 160);"
 
-# Trade between two users
+# Trade between two users (user 1 buys 2 stocks from user 2)
 # sqlite3 -line Database/Main.db "INSERT INTO trades (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES ('115529453441494604337', '104294035584677999327', 1, 30, 200, '0');"
+
+echo "=============================================="
+echo "Users: "
+sqlite3 -line Database/Main.db "SELECT * FROM users;"
+echo "=============================================="
+
+echo "Stocks: "
+sqlite3 -line Database/Main.db "SELECT * FROM stocks;"
+echo "=============================================="
+
+echo "Bids: "
+sqlite3 -line Database/Main.db "SELECT * FROM bids;"
+echo "=============================================="
+
+echo "Offers: "
+sqlite3 -line Database/Main.db "SELECT * FROM offers;"
+echo "=============================================="
+
+echo "Trades: "
+sqlite3 -line Database/Main.db "SELECT * FROM trades;"
+echo "=============================================="
 
 echo "User owned stocks: "
 sqlite3 -line Database/Main.db "SELECT * FROM user_owned_stocks;"

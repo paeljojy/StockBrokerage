@@ -209,6 +209,7 @@ export async function sendBidAdditionRequest(credential: { email: string | Blob;
     // INFO: We can't send the bidData object as is, so we need to send the individual fields
     /* formData.append('bidData.id', bidData.id); // INFO:Setting the id is done on the server */
     formData.append('bidData.user_id', bidData.user_id);
+    // FIXME: There's a rare bug that this is somehow undefined???? When everything else is valid
     formData.append('bidData.stock_id', bidData.stock_id);
     formData.append('bidData.amount', bidData.amount);
     formData.append('bidData.price', bidData.price);

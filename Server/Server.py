@@ -197,6 +197,11 @@ class StockTradeManager:
 
     # Adds a new bid and updates
     def add_bid(self, newBid):
+        print("Attempting to add a new bid to the system...")
+        print("Bid price: ${}".format(newBid.price))
+        print("Bid amount: {} stocks".format(newBid.amount))
+        print("Current stock market price: ${}".format(self.current_stock))
+        
         # Search for possible trades (possible sell offers to match)
         # NOTE: To match the price has to be equal or lower than what we are offering in the bid
         # and the lowest price is matched first
@@ -284,7 +289,6 @@ class StockTradeManager:
             # If the sell offer has less or equal amount of stocks than the bid
             else:
                 print("Offer has equal amount of stocks or less than the bid")
-
 
         self.bids[newBid.id] = newBid
         self.update()
@@ -430,7 +434,7 @@ class Server():
         cursor.close()
         conn.close()
 
-    def get_user_by_id(self, id):
+    def is_user_logged_in(self, id):
         if id in self.logged_in_users:
             return self.logged_in_users[id]
         return User()  # Return None if no user with the given id is found
@@ -542,7 +546,7 @@ def handle_login_request():
     print("Received sub:" + userSub)
 
     # Check if user is already logged in
-    if userSubNumber == server.get_user_by_id(userSubNumber).id:
+    if userSubNumber == server.is_user_logged_in(userSubNumber).id:
         return Response(0, "Login success: user is already logged in!").jsonify()
 
     conn = sqlite3.connect('Database/Main.db')
@@ -595,7 +599,7 @@ def handle_logout_request():
     userSubNumber = int(userSub)
 
     # Check if user is actually still logged in
-    if userSubNumber != server.get_user_by_id(userSubNumber).id:
+    if userSubNumber != server.is_user_logged_in(userSubNumber).id:
         return Response(1, "Logout error: user is not logged in!", "error").jsonify()
 
     # Convert back to string to remove possible sql injection
@@ -643,7 +647,7 @@ def handle_get_bids_request():
     # Convert user sub string to int
     userSubNumber = int(userSub) # INFO: This is used as the user id
 
-    if userSubNumber != server.get_user_by_id(userSubNumber).id:
+    if userSubNumber != server.is_user_logged_in(userSubNumber).id:
         return jsonify("error_userNotLoggedIn, Failed to get bids from server error: user is not logged in!")
         # return Response(1, "")
 
@@ -691,10 +695,8 @@ def handle_bid_addition():
     userSubNumber = int(userSub) # INFO: This is used as the user id
 
     # Check if user is actually still logged in
-    # BUG: Currently, the frontend allows the user to easily attempt adding bids without logging in
-    # which is not wanted, we want the user to log in first before we allow them to place bids, 
-    # as we wouldn't be able to recognize who is making the bids otherwise
-    if userSubNumber != server.get_user_by_id(userSubNumber).id:
+    if userSubNumber != server.is_user_logged_in(userSubNumber).id:
+        print("User id of the bid is: {}".format(userSub))
         return Response(1, "Bid addition error: user is not logged in!", "error").jsonify()
         # return jsonify("error_userNotLoggedIn, bid addition error: user is not logged in!")
 
@@ -709,6 +711,7 @@ def handle_bid_addition():
     # this could also be done by setting limits in the input boxes
     # because in that way we don't tell the client about how the server is handling the sent data
     if (amount < 1):
+
         return Response(1, "The user has to sell at least one stock!", "error").jsonify()
 
     price = request.form.get("bidData.price", "")
@@ -771,7 +774,7 @@ def handle_sell_addition():
     # BUG: Currently, the frontend allows the user to easily attempt adding bids without logging in
     # which is not wanted, we want the user to log in first before we allow them to place bids, 
     # as we wouldn't be able to recognize who is making the bids otherwise
-    if userSubNumber != server.get_user_by_id(userSubNumber).id:
+    if userSubNumber != server.is_user_logged_in(userSubNumber).id:
         return jsonify("error_userNotLoggedIn, sell offer addition error: user is not logged in!")
 
     # print("User id of the bid is: {}".format(userSub))
