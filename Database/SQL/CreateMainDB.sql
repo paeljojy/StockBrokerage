@@ -86,7 +86,7 @@ CREATE TABLE trades(
     seller_user_id TEXT NOT NULL,
     stock_id INTEGER NOT NULL,
     amount INTEGER NOT NULL,
-    price INTEGER NOT NULL,
+    price REAL NOT NULL,
     time DATETIME NOT NULL,
     CONSTRAINT user_owned_stock_pk PRIMARY KEY (buyer_user_id, seller_user_id, time)
 );

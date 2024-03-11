@@ -57,7 +57,7 @@ export default {
             currentStock: {
                 id: 1,
                 name: 'Apple, Inc (AAPL)',
-                last: 0
+                price: 0
             }
         }
     },
@@ -68,7 +68,7 @@ export default {
         },
         async fetchLastTradedPrice() {
             this.currentStock = await getLastTradedPriceForStock(this.loginCredential, this.currentStock.id);
-            console.log("Last price is: " + this.currentStock.last);
+            console.log("Last price is: " + this.currentStock.price);
             console.log("Current stock is: " + this.currentStock.name);
             console.log("Current stock id is: " + this.currentStock.id);
         },

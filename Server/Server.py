@@ -106,14 +106,12 @@ class StockTradeManager:
             stocks.append(row)
 
         for stock in stocks:
-            
             # self.current_stock = Stock(stock[0], stock[1], stock[2], stock[3])
 
             # TODO: Get the current stock price from the REST API if the time since the last fetch is greater than 1 hour etc.
 
             # if (self.current_stock == Stock()):
             #     print("ERROR: Failed to fetch the current stock price from the database!")
-            
 
             try:
                 self.current_stock = float(stock[2])
@@ -175,7 +173,7 @@ class StockTradeManager:
 
         for trade in trades:
             # FIXME: Make Trade object and replace the Order(...) here with it
-            self.trades.append(Order(trade[0], trade[1], trade[2], trade[3], trade[4], trade[5]))
+            self.trades.append(Trade(trade[0], trade[1], trade[2], trade[3], trade[4], trade[5]))
 
         # Clean up
         cursor.close()
@@ -202,7 +200,7 @@ class StockTradeManager:
 
     # Adds a new sell offer and updates
     def add_offer(self, newOffer):
-        self.sell_offers[newOffer.id] = newOffer
+        self.sell_offers.append(newOffer)
         self.update()
 
     # Adds a new bid and updates
@@ -378,9 +376,20 @@ class User:
         return self.id != -1
 
 class Trade:
-    # TODO:
-    def __init__(self):
-        pass
+    buyer_user_id : str = ''
+    seller_user_id : str = ''
+    stock_id : int = 0
+    amount : int = 0
+    price : float = 0
+    date: str = '1970 01 01 00:00:00.000000'
+
+    def __init__(self, buyer_user_id : str, seller_user_id : str, stock_id : int=1, amount=0, price=-1.0, date='1970 01 01 00:00:00.000000'):
+        self.buyer_user_id = buyer_user_id
+        self.seller_user_id = seller_user_id
+        self.stock_id = stock_id
+        self.amount = amount
+        self.price = price
+        self.date = date 
 
 class Order:
     user = User()
