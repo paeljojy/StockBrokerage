@@ -257,7 +257,7 @@ export default {
                         <th>Price</th>
                         <th>Action</th>
                     </tr>
-                    <tr v-for="(offer, index) in userOffers" :key="index">
+                    <tr v-for="(offer, index) in sellDataList" :key="index">
                         <td>Date</td>      
                         <td>{{ offer[3] }}</td>
                         <td>{{ offer[4] }}</td>  
