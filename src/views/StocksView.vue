@@ -56,8 +56,8 @@ export default {
     },
     methods: {
         async fetchStocks() {
-            this.stocks = await getStocksFromServer(this.loginCredential);
-            console.log(this.stocks);
+            // print bid data list
+            console.log(this.bidDataList);
         },
         async fetchLastTradedPrice() {
             const newCurrentStock = await getLastTradedPriceForStock(this.loginCredential, this.currentStock.id);
@@ -150,8 +150,12 @@ export default {
             };
 
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
+
+            // FIXME: Check if the bid addition succeeded
             sendBidAdditionRequest(this.loginCredential, newBidData);
+            // FIXME: and then do this?
             this.bidDataList.push({ ...newBidData });
+
             console.log(this.bidDataList);
         },
         async requestSellAddition() {
