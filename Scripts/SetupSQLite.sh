@@ -10,7 +10,7 @@ sqlite3 Database/Main.db < Database/SQL/CreateMainDB.sql
 # Insert some sample data into main db
 sqlite3 -line Database/Main.db "INSERT INTO users (sub, email, first_name, last_name) VALUES ('2', 'teppo@gmail.com', 'Teppo', 'Testi');"
 
-sqlite3 -line Database/Main.db "INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (1, '1', '1', 30, 30);"
+sqlite3 -line Database/Main.db "INSERT INTO bids (id, user_id, stock_id, amount, price, date) VALUES (1, '1', '1', 30, 30, '2024-03-11 19:19:54.359319');"
 
 # Add some user owned stocks for user
 
@@ -24,7 +24,7 @@ sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id
 sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id, amount) VALUES ('104294035584677999327', 1, 2);"
 
 # User 2 sells 2 stocks
-sqlite3 -line Database/Main.db "INSERT INTO offers (id, user_id, stock_id, amount, price) VALUES (1, '104294035584677999327', 1, 2, 160);"
+sqlite3 -line Database/Main.db "INSERT INTO offers (id, user_id, stock_id, amount, price, date) VALUES (1, '104294035584677999327', 1, 2, 160, '2024-03-11 19:19:54.359319');"
 
 # Trade between two users (user 1 buys 2 stocks from user 2)
 # sqlite3 -line Database/Main.db "INSERT INTO trades (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES ('115529453441494604337', '104294035584677999327', 1, 30, 200, '0');"
