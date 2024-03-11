@@ -1,5 +1,6 @@
 <script lang="ts">
 import { getStocksFromServer } from '../stocks/StocksAPI.ts'
+import { getLastTradedPriceForStock } from '../stocks/StocksAPI.ts'
 import { getDB } from '../stocks/StocksAPI.ts'
 import { getBidsFromServer } from '../stocks/StocksAPI.ts'
 import { sendLogin } from '../stocks/StocksAPI.ts'
@@ -66,7 +67,7 @@ export default {
             console.log(this.stocks);
         },
         async fetchLastTradedPrice() {
-            this.currentStock = await getStocksFromServer(this.loginCredential);
+            this.currentStock = await getLastTradedPriceForStock(this.loginCredential, this.currentStock.id);
             console.log("Last price is: " + this.currentStock.last);
             console.log("Current stock is: " + this.currentStock.name);
             console.log("Current stock id is: " + this.currentStock.id);

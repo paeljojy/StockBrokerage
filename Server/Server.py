@@ -50,7 +50,7 @@ class Stock:
     id = -1
     name = ""
     price = -1
-    fetched_time = None
+    fetched_time = None # NOTE: The time that the stocks last traded price was fetched at from the REST API
 
     def __init__(self, id=-1, name='', price=-1, fetched_time=0):
         self.id = id
@@ -67,7 +67,6 @@ class Stock:
     def is_valid(self):
         return self.id != -1
 
-
 # INFO: Manages stock trades, bids and sell offers
 # it can be used to add, remove, update and get trades
 # Consider this as a singleton
@@ -78,6 +77,9 @@ class Stock:
 # the system will always be up to date unless the stock market price changes
 # when the stock market price changes we update the whole system and match bids with sell offers
 class StockTradeManager:
+    cached_data = []  # NOTE: This stores cached data for every tradeable stock in the system, consists of id, price and when the last price was fetched
+                      # TODO: check and fill in the rest of the above ^ comment
+
     trades = []     # Already made trades
 
     # Both of these shouldn't store bids or selloffers that could be matched
@@ -102,46 +104,49 @@ class StockTradeManager:
         stocks = []
         for row in cursor:
             stocks.append(row)
-        stock = stocks[0]
-        # self.current_stock = Stock(stock[0], stock[1], stock[2], stock[3])
 
-        # TODO: Get the current stock price from the REST API if the time since the last fetch is greater than 1 hour etc.
+        for stock in stocks:
+            
+            # self.current_stock = Stock(stock[0], stock[1], stock[2], stock[3])
 
-        # if (self.current_stock == Stock()):
-        #     print("ERROR: Failed to fetch the current stock price from the database!")
+            # TODO: Get the current stock price from the REST API if the time since the last fetch is greater than 1 hour etc.
 
-        try:
-            self.current_stock = float(stock[2])
-        except ValueError:
-            print(f"Cannot convert '{stock[2]}' to float")
+            # if (self.current_stock == Stock()):
+            #     print("ERROR: Failed to fetch the current stock price from the database!")
+            
 
-        # self.current_stock = float(stock[2])
-        print("Current stock price: ${}".format(self.current_stock))
-
-        # Check that the stock price is fetched within the last hour
-        # if not, fetch the stock price from the REST API and update the current stock price
-        time = datetime.now() # NOTE: We fetch time here to avoid any possible time differences between the stock price and the time we fetch it as this might take time
-
-        # Convert the fetched time to a datetime object
-        stock_time = datetime.strptime(str(stock[3]), '%Y-%m-%d %H:%M:%S.%f')
-
-        # TODO: Init a timer with an event that will update the stock price every hour
-        # Check if the stock price is fetched within the last hour
-        if (time - stock_time).total_seconds() > 3600:
-        # if True:
-            # Fetch the stock price from the REST API
-            res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
-            data = res.json()
-
-            # Update the current stock price
             try:
-                self.current_stock = float(data['last'][0])
+                self.current_stock = float(stock[2])
             except ValueError:
                 print(f"Cannot convert '{stock[2]}' to float")
 
-            cursor = conn.execute("UPDATE stocks SET current_price = ?, fetched_at = ? WHERE id = ?", (self.current_stock, time, int(stock[0])))
-            conn.commit()
-            print("Updated current stock price: ${} and time: {}".format(self.current_stock, time))
+            # self.current_stock = float(stock[2])
+            print("Current stock price: ${}".format(self.current_stock))
+
+            # Check that the stock price is fetched within the last hour
+            # if not, fetch the stock price from the REST API and update the current stock price
+            time = datetime.now() # NOTE: We fetch time here to avoid any possible time differences between the stock price and the time we fetch it as this might take time
+
+            # Convert the fetched time to a datetime object
+            stock_time = datetime.strptime(str(stock[3]), '%Y-%m-%d %H:%M:%S.%f')
+
+            # TODO: Init a timer with an event that will update the stock price every hour
+            # Check if the stock price is fetched within the last hour
+            if (time - stock_time).total_seconds() > 3600:
+            # if True:
+                # Fetch the stock price from the REST API
+                res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
+                data = res.json()
+
+                # Update the current stock price
+                try:
+                    self.current_stock = float(data['last'][0])
+                except ValueError:
+                    print(f"Cannot convert '{stock[2]}' to float")
+
+                cursor = conn.execute("UPDATE stocks SET current_price = ?, fetched_at = ? WHERE id = ?", (self.current_stock, time, int(stock[0])))
+                conn.commit()
+                print("Updated current stock price: ${} and time: {}".format(self.current_stock, time))
 
         # Query the database for bids
         cursor = conn.execute("SELECT * FROM BIDS")
@@ -403,13 +408,11 @@ class SellOffer:
         self.user = user
 
 class Server():
-    cached_data = None
-    last_fetch_time = None
     logged_in_users = {}
     stock_trade_manager = StockTradeManager()
 
     def __init__(self):
-        self.cached_data = None
+        self.cached_data = [] 
 
         # Init empty 
         self.logged_in_users = {}
@@ -453,8 +456,8 @@ class Server():
             return self.logged_in_users[id]
         return User()  # Return None if no user with the given id is found
 
-    def get_cached_data(self):
-        return self.cached_data
+    def get_cached_data(self, stock_id):
+        return self.cached_data[stock_id]
 
     @staticmethod
     # NOTE: This should only be called when an connection to the database is already established
@@ -490,28 +493,36 @@ CORS(app)
 def hello_world():
     return "<p>Hello, World!</p>"
 
-def resolve_cached_data(server):
-    data = server.get_cached_data()
+def resolve_cached_data(server, stock_id):
+    stock_data = server.get_cached_data()
     server.current_time = datetime.now()
 
     # If we have cached data and it's less than an hour old, return it
     # INFO: 3600s = 1 hour
-    if server.cached_data is not None and (server.current_time - server.last_fetch_time).total_seconds() < 3600:
-        return server.cached_data
+    if server.cached_data[stock_id] is not None and (server.current_time - server.last_fetch_time).total_seconds() < 3600:
+        return server.cached_data[stock_id]
 
     # Otherwise, fetch new data from REST API
     res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
-    data = res.json()
+    stock_data = res.json()
 
     # Update the cache and the fetch time
-    server.cached_data = data
+    server.cached_data[stock_id] = stock_data
     server.last_fetch_time = server.current_time
 
-    return data
+    return stock_data[stock_id]
+
+@app.route('/api/stocks/price', methods=['POST'])
+def getLastTradedPriceForStock():
+    # Get the wanted stock id from the request
+    stock_id = request.form.get("stockData.id", "")
+    stock_id = int(stock_id)
+    data = resolve_cached_data(server, stock_id)
+    return Response(0, "Fetch success: Successfully fetched last traded price data from the server!", data).jsonify()
 
 @app.route('/api/stocks/apple', methods=['POST'])
 def get_stocks():
-    data = resolve_cached_data(server)
+    data = resolve_cached_data(server, 1)
     return Response(0, "Fetch success: Successfully fetched stock data from the server!", data).jsonify()
 
 # INFO: Rest api for getting all the made trades
