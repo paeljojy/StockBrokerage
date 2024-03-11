@@ -31,6 +31,7 @@ CREATE TABLE offers(
 	stock_id INTEGER NOT NULL,
 	amount INTEGER NOT NULL,
 	price REAL NOT NULL,
+    date DATETIME NOT NULL,
 	CONSTRAINT offers_pk PRIMARY KEY (id, user_id, stock_id)
 );
 
@@ -43,6 +44,7 @@ CREATE TABLE bids(
 	stock_id INTEGER NOT NULL,
 	amount INTEGER NOT NULL,
 	price REAL NOT NULL,
+    date DATETIME NOT NULL,
     -- TODO: Might not need to have user_id and stock_id as part of the primary key
     --we could just increment bid id
 	CONSTRAINT bids_pk PRIMARY KEY (id, user_id, stock_id)
