@@ -172,7 +172,6 @@ class StockTradeManager:
             trades.append(row)
 
         for trade in trades:
-            # FIXME: Make Trade object and replace the Order(...) here with it
             self.trades.append(Trade(trade[0], trade[1], trade[2], trade[3], trade[4], trade[5]))
 
         # Clean up
@@ -503,6 +502,12 @@ def hello_world():
     return "<p>Hello, World!</p>"
 
 def resolve_cached_data(server, stock_id):
+    # 1. Fetch stock data from data base
+    # 2. If doesn't exists, insert 
+    # 3. Check fetched time is < 3600
+    # 4. If not, fetch and update in the database
+    # 5. Return up to date Stock object
+
     stock_data = server.get_cached_data()
     server.current_time = datetime.now()
 

@@ -216,7 +216,7 @@ export default {
         <div class="stock-container">
             <header>
                 <h1>Apple, Inc (AAPL)</h1>
-                <div class="price"> {{currentStock.last[0]}} USD</div>
+                <div class="price"> {{currentStock.price[0]}} USD</div>
             </header>
             <section class="chart">
                 <!-- CHART -->
