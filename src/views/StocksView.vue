@@ -29,29 +29,21 @@ export default {
             loginCredential: {},
             amount: 0,
             price: 0,
-            bidData: {
-                user_id: 0,
-                stock_id: 0,
-                amount: 0,
-                price: 0
-            },
             bidDataList: [] as {
+                id: number;
                 user_id: number;
                 stock_id: number;
                 amount: number;
                 price: number;
+                date: string;
             }[],
-            sellData: {
-                user_id: 0,
-                stock_id: 0,
-                amount: 0,
-                price: 0
-            },
             sellDataList: [] as {
+                id: number;
                 user_id: number;
                 stock_id: number;
                 amount: number;
                 price: number;
+                date: string;
             }[],
             // TODO: Query these from the server when we open the stock page
             currentStock: {
@@ -105,26 +97,22 @@ export default {
             const ret = sendLogin(this.loginCredential);
             console.log("Send Login responded: " + ret);
             this.isUserLoggedIn = true;
+
+            this.requestBids();
         },
         formatPrice() {
             this.price = parseFloat(this.price.toFixed(2)); // Rounds to nearest (up to) 2 decimals
         },
-        requestBids() {
-            // TODO: (Jonna) This should be called when the user opens the stock page
-            // and is actually logged in, this will probably only be a temporary solution
-            // as we want the final application to force the user to log in
-            // before even be able to navigate to the stock page (or even show it)
+        async requestBids() {
             try {
-            const bids = getBidsFromServer(this.loginCredential);
-            
-            this.bidDataList = bids;
-            console.log("Received bids:", bids);
-            
+                const data = await getBidsFromServer(this.loginCredential);
+                this.bidDataList = data[0];
+                this.sellDataList = data[1];
+                console.log("User bids:", this.bidDataList);
+                console.log("User offers:", this.sellDataList);
             } catch (error) {
                 console.error("Error fetching bids:", error);
             }
-            // TODO: (Jonna) Populate the bids list and update the UI
-
         },
         async requestBidAddition() {
             // INFO: We are not setting the bid id here, 
@@ -220,18 +208,6 @@ export default {
             </header>
             <section class="chart">
                 <!-- CHART -->
-                <h2>Bid:</h2>
-                <!-- Display each bidData item -->
-                <div v-for="(bidDataItem, index) in bidDataList" :key="index">
-                    <p>User ID: {{ bidDataItem.user_id }} Stock ID: {{ bidDataItem.stock_id }} Amount: {{ bidDataItem.amount }} Price: {{ bidDataItem.price }}</p>
-                <hr>
-                </div>
-                <h2>Sell:</h2>
-                <!-- Display each sellData item -->
-                <div v-for="(sellDataItem, index) in sellDataList" :key="index">
-                    <p>User ID: {{ sellDataItem.user_id }} Stock ID: {{ sellDataItem.stock_id }} Amount: {{ sellDataItem.amount }} Price: {{ sellDataItem.price }}</p>
-                <hr>
-                </div>
             </section>
             <div class="trade-controls" v-if="isUserLoggedIn">
                 <div class="input-group">
@@ -245,11 +221,44 @@ export default {
                 <div class="button-group">
                     <button class="trade-btn bid" @click="requestBidAddition">BID</button>
                     <button class="trade-btn sell" @click="requestSellAddition">SELL</button>
-
-                    <!-- NOTE: Only for testing -->
-                    <!-- FIXME: Remove later -->
-                    <button class="trade-btn sell" @click="requestBids">GET BIDS</button>
                 </div>
+            </div>
+            <div class="Bids-Sells" v-if="isUserLoggedIn">
+                <h2>Bids</h2>
+                <table class="Bids">
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr v-for="(bid, index) in bidDataList" :key="index">
+                        <td>Date</td>      
+                        <td>{{ bid[3] }}</td>
+                        <td>{{ bid[4] }}</td>
+                        <td>
+                            <button @click="cancelBid(bid)">Cancel</button>
+                        </td>
+                    </tr>
+                </table>
+
+                <h2>Sells</h2>
+                <table class="Offers">
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Price</th>
+                        <th>Action</th>
+                    </tr>
+                    <tr v-for="(offer, index) in userOffers" :key="index">
+                        <td>Date</td>      
+                        <td>{{ offer[3] }}</td>
+                        <td>{{ offer[4] }}</td>  
+                        <td>
+                            <button @click="cancelOffer(offer)">Cancel</button>
+                        </td>
+                    </tr>
+                </table>
             </div>
         </div>
         <div class="stocks">
@@ -270,28 +279,6 @@ export default {
         <!--     <button @click="sendLoginRequest">Log in</button> -->
         <!-- </div> -->
     </div>
-    <div v-if="isUserLoggedIn">
-    <h2>Bid:</h2>
-    <!-- Display each bidData item -->
-    <div v-for="(bidDataItem, index) in bidDataList" :key="index">
-        <p>User ID: {{ bidDataItem.user_id }}</p>
-        <p>Stock ID: {{ bidDataItem.stock_id }}</p>
-        <p>Amount: {{ bidDataItem.amount }}</p>
-        <p>Price: {{ bidDataItem.price }}</p>
-        <hr>
-    </div>
-    <div v-if="isUserLoggedIn">
-    <h2>Sell:</h2>
-    <!-- Display each sellData item -->
-    <div v-for="(sellDataItem, index) in sellDataList" :key="index">
-        <p>User ID: {{ sellDataItem.user_id }}</p>
-        <p>Stock ID: {{ sellDataItem.stock_id }}</p>
-        <p>Amount: {{ sellDataItem.amount }}</p>
-        <p>Price: {{ sellDataItem.price }}</p>
-        <hr>
-    </div>
-</div>
-</div>
 </template>
 
 <style>
@@ -339,6 +326,16 @@ header h1 {
   gap: 10px;
   position: relative;
 }
+
+table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 3px solid #dddddd;
+        text-align: left;
+        padding: 8px;
+    }
 
 .input-group, .button-group {
   position: relative;
