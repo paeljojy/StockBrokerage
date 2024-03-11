@@ -9,6 +9,7 @@ from enum import Enum
 
 # print("CWD IS: ", os.getcwd())
 
+
 # NOTE: Response object is a wrapper for the response data that is sent to the client
 # It contains the status code of the response, the message and the actual data
 # The status code is used to determine if the request was successful or not
@@ -20,16 +21,15 @@ from enum import Enum
 #
 # INFO: You can use enums to make this more readable
 # enum StatusCode { Success = 0, Error = 1, Unauthorized = 2, Unknown = 3, } etc...
-
 class Response:
     status = -1
     message = ''
     data = None
 
-    def __init__(self, status = -1, message = '', data = None):
+    def __init__(self, status=-1, message='', data=None):
         self.status = status
         self.message = message
-        self.data = data 
+        self.data = data
 
     def get_status(self):
         return self.status
@@ -45,13 +45,14 @@ class Response:
     def jsonify(self):
         return jsonify(self.__dict__)
 
+
 class Stock:
     id = -1
     name = ""
     price = -1
     fetched_time = None
 
-    def __init__(self, id = -1, name = '', price = -1, fetched_time = 0):
+    def __init__(self, id=-1, name='', price=-1, fetched_time=0):
         self.id = id
         self.name = name
         self.price = price
@@ -65,6 +66,7 @@ class Stock:
 
     def is_valid(self):
         return self.id != -1
+
 
 # INFO: Manages stock trades, bids and sell offers
 # it can be used to add, remove, update and get trades
@@ -86,9 +88,9 @@ class StockTradeManager:
     current_stock = float(0.0) # The current stock price of the current stock that is being traded NOTE: this should be set to the price of the stock that is being traded before update is called
 
     def __init__(self):
-        self.trades = {}
-        self.bids = {}
-        self.sell_offers = {}
+        self.trades = []
+        self.bids = []
+        self.sell_offers = []
 
         # Query the database for the current stock price
         conn = sqlite3.connect('Database/Main.db')
@@ -149,7 +151,7 @@ class StockTradeManager:
         cursor.close()
 
         for bid in bids:
-            self.bids[bid[0]] = Order(bid[0], bid[1], bid[2], bid[3], bid[4])
+            self.bids.append(Order(bid[0], bid[1], bid[2], bid[3], bid[4], bid[5]))
 
         # Query the database for sell offers
         cursor = conn.execute("SELECT * FROM OFFERS")
@@ -158,7 +160,7 @@ class StockTradeManager:
             sell_offers.append(row)
 
         for sell_offer in sell_offers:
-            self.sell_offers[sell_offer[0]] = Order(sell_offer[0], sell_offer[1], sell_offer[2], sell_offer[3], sell_offer[4])
+            self.sell_offers.append(Order(sell_offer[0], sell_offer[1], sell_offer[2], sell_offer[3], sell_offer[4], sell_offer[5], 1))
 
         # Query the database for trades
         cursor = conn.execute("SELECT * FROM TRADES")
@@ -167,8 +169,9 @@ class StockTradeManager:
             trades.append(row)
 
         for trade in trades:
-            self.trades[trade[0]] = Order(trade[0], trade[1], trade[2], trade[3], trade[4], trade[5])
-        
+            # FIXME: Make Trade object and replace the Order(...) here with it
+            self.trades.append(Order(trade[0], trade[1], trade[2], trade[3], trade[4], trade[5]))
+
         # Clean up
         cursor.close()
         conn.close()
@@ -180,7 +183,9 @@ class StockTradeManager:
         # TODO: Insert into database
 
         conn = sqlite3.connect('Database/Main.db')
-        cursor = conn.execute("INSERT INTO TRADES (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES (?, ?, ?, ?, ?)", (bid.user_id, sellOffer.sellers_user_id, bid.stock_id, bid.amount, bid.price, time))
+        cursor = conn.execute("INSERT INTO TRADES (buyer_user_id, seller_user_id, \
+                                                  stock_id, amount, price, time) VALUES (?, ?, ?, ?, ?)", \
+                                                  (bid.user_id, sellOffer.sellers_user_id, bid.stock_id, bid.amount, bid.price, time))
 
         try:
             conn.commit()
@@ -197,11 +202,11 @@ class StockTradeManager:
 
     # Adds a new bid and updates
     def add_bid(self, newBid):
-        print("Attempting to add a new bid to the system...")
+        print("Attempting to add a new bid to stock trade manager...")
         print("Bid price: ${}".format(newBid.price))
         print("Bid amount: {} stocks".format(newBid.amount))
         print("Current stock market price: ${}".format(self.current_stock))
-        
+
         # Search for possible trades (possible sell offers to match)
         # NOTE: To match the price has to be equal or lower than what we are offering in the bid
         # and the lowest price is matched first
@@ -217,13 +222,13 @@ class StockTradeManager:
         if len(possibly_matching_sell_offers) < 1:
             # No possible trades
             # Add the bid to the list and return
-            self.bids[newBid.id] = newBid
+            self.bids.append(newBid)
             return
 
         # We have a possible trade
         # Sort the possible sell offers by price and time
         # NOTE: We want to match the lowest sell price so we sort the prices in ascending order
-        possibly_matching_sell_offers.sort(key=lambda x: (x.price, x.fetched_time)) # Sort by price and then time
+        possibly_matching_sell_offers.sort(key=lambda x: (x.price, x.date)) # Sort by price and then time
 
         # Match the bid with the sell offer
         # NOTE: First one is the lowest price and the oldest one
@@ -239,18 +244,20 @@ class StockTradeManager:
             # aka. we overflow the sell offer
             if stocks_in_sell_offer > newBid.amount:
                 # We have to split the sell offer into two sell offers
-                fullfilling_offer = Order(possibly_matching_sell_offer.id, 
-                                          possibly_matching_sell_offer.user, 
-                                          possibly_matching_sell_offer.stock_id, 
-                                          newBid.amount, possibly_matching_sell_offer.price, 
-                                          1) # Create a new sell offer with the remaining stocks
+                fullfilling_offer = Order(possibly_matching_sell_offer.id,
+                                          possibly_matching_sell_offer.user,
+                                          possibly_matching_sell_offer.stock_id,
+                                          newBid.amount, possibly_matching_sell_offer.price,
+                                          possibly_matching_sell_offer.date,
+                                          1)  # Create a new sell offer with the remaining stocks
 
-                remaining_offer = Order(Server.query_next_bid_id(), 
-                                        possibly_matching_sell_offer.user, 
-                                        possibly_matching_sell_offer.stock_id, 
+                remaining_offer = Order(Server.query_next_bid_id(),
+                                        possibly_matching_sell_offer.user,
+                                        possibly_matching_sell_offer.stock_id,
                                         possibly_matching_sell_offer.amount - newBid.amount, # Calc the remaining stocks
-                                        possibly_matching_sell_offer.price, 
-                                        1) # Create a new sell offer that has the remaining stocks, we need a new id for this
+                                        possibly_matching_sell_offer.price,
+                                        possibly_matching_sell_offer.date,
+                                        1)  # Create a new sell offer that has the remaining stocks, we need a new id for this
 
                 # Remove the bid and the sell offer from the lists
                 cursor = conn.execute("DELETE FROM bids WHERE id = ?", (newBid.id))
@@ -284,13 +291,13 @@ class StockTradeManager:
 
                 # and then add the remaining stock offer to the sell offers list
                 self.add_offer(remaining_offer)
-                
+
             # Sell offer has the equal or less amount of stocks than the bid
             # If the sell offer has less or equal amount of stocks than the bid
             else:
                 print("Offer has equal amount of stocks or less than the bid")
 
-        self.bids[newBid.id] = newBid
+        self.bids.append(newBid)
         self.update()
 
     # General update that is used whenever a new stock price is fetched 
@@ -311,7 +318,7 @@ class StockTradeManager:
 
                     # TODO: (Pate 󰯈 ) Check against the market price that this is not more than ±10% of the market price
                     # Match the bid with the sell offer
-                    
+
                     # If the bid price is greater than or equal to the sell offer price
                     # we have a valid trade
                     if bid.price >= sell_offer.price:
@@ -365,6 +372,11 @@ class User:
     def is_valid(self):
         return self.id != -1
 
+class Trade:
+    # TODO:
+    def __init__(self):
+        pass
+
 class Order:
     user = User()
     id = -1
@@ -372,12 +384,14 @@ class Order:
     amount = -1
     price = -1
     order_type = 0 # 0 = bid, 1 = sell offer
+    date = '' # NOTE: Used for time when the offer or bid was made
 
     # NOTE: We query the database for the next available id and use it as the id of the bid
-    def __init__(self, id, user, stock_id, amount, price, order_type = 0): # NOTE: By default we init a bid 1 for sell offer
+    def __init__(self, id: int, user: User, stock_id, amount: int, price: float, date: str, order_type: int=0): # NOTE: By default we init a bid 1 for sell offer
         self.id = id         # NOTE: this is id of the bid, NOT THE USER
         self.user = user     # Actual user object
         self.stock_id = stock_id
+        self.date = date
 
         self.amount = amount
         self.price = price
@@ -616,7 +630,7 @@ def handle_logout_request():
     users = []
     for row in cursor:
         users.append(row)
-    
+
     # Check if the user is already logged out
     # the user can either not be found or the logged_in field is 0
     # NOTE: users[0] is the first row of the result (we are only expecting one as subs (user_id) are unique)
@@ -637,7 +651,7 @@ def handle_logout_request():
     del server.logged_in_users[userSubNumber]
     print("User with sub: {} logged out succesfully".format(userSubNumber))
     return Response(0, "Logout success: existing user!").jsonify()
-    
+
 # INFO: Handles request to get all the bids for a stock
 @app.route('/api/stocks/bids', methods=['POST'])
 def handle_get_bids_request():
@@ -711,13 +725,15 @@ def handle_bid_addition():
     user_id = request.form.get("bidData.user_id", "")
     stock_id = request.form.get("bidData.stock_id", "")
     amount = request.form.get("bidData.amount", "")
+    date = request.form.get("bidData.date", "")
     amount = int(amount)
+
     # FIXME: Use different status code in the response to indicate different problems with the bid
     # addition so we can display correct messages to the user
     # this could also be done by setting limits in the input boxes
     # because in that way we don't tell the client about how the server is handling the sent data
     if (amount < 1):
-
+        print("The user has to sell at least one stock!")
         return Response(1, "The user has to sell at least one stock!", "error").jsonify()
 
     price = request.form.get("bidData.price", "")
@@ -727,7 +743,7 @@ def handle_bid_addition():
     if not (abs(price - server.stock_trade_manager.current_stock) <= server.stock_trade_manager.current_stock * 0.1):
         return Response(1, "Price is outside the allowed range!", "error").jsonify()
 
-    newBid = Order(Server.query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price)
+    newBid = Order(Server.query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price, date)
 
     # TODO: Query next id from the database
 
@@ -749,7 +765,7 @@ def handle_bid_addition():
 
     # Make prepared statement instead of using raw sql
     # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
-    cursor = conn.execute("INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newBid.id, str(newBid.user.id), newBid.stock_id, newBid.amount, newBid.price))
+    cursor = conn.execute("INSERT INTO bids (id, user_id, stock_id, amount, price, date) VALUES (?, ?, ?, ?, ?, ?)", (newBid.id, str(newBid.user.id), newBid.stock_id, newBid.amount, newBid.price, newBid.date))
 
     try:
         conn.commit()
@@ -757,6 +773,7 @@ def handle_bid_addition():
     except:
         # cursor.close()
         # conn.close()
+        print("ERROR: Failed to add bid to the database!")
         return jsonify("error_bidAddition, Bid addition error: failed to add bid to the database!")
     finally:
         cursor.close()
@@ -787,9 +804,12 @@ def handle_sell_addition():
     # User is surely logged in: Parse all the fields (of the bid) from the request form
     user_id = request.form.get("sellData.user_id", "")
     stock_id = request.form.get("sellData.stock_id", "")
+    date = request.form.get("sellData.date", "")
     amount = request.form.get("sellData.amount", "")
+    amount = int(amount)
     price = request.form.get("sellData.price", "")
-    newOffer = Order(Server.query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price, 1) # Init a sell offer
+    price = float(price)
+    newOffer = Order(Server.query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price, date, 1) # Init a sell offer
 
     # TODO: Query next id from the database
 
@@ -829,4 +849,4 @@ def handle_sell_addition():
     # might also be the case when using sqlite
 
     return jsonify("success_offerAdded, Bid addition success: existing user added an offer!")
-    
+

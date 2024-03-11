@@ -24,8 +24,9 @@ export async function getStocksFromServer(credential: { email: string | Blob; su
     })
         .then(response => response.json())
         .then(data => {
-            /* console.log(data) */
-            return data.data;
+            console.log("Data in getStocksFromServer():")
+            console.log(data) 
+            return data;
         });
     return data;
 }
@@ -198,7 +199,7 @@ export async function sendLogout(credential: { email: string | Blob; sub: string
 // INFO: Sends a bid addition request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
 // @param bidData: Added bid data
-export async function sendBidAdditionRequest(credential: { email: string | Blob; sub: string | Blob; }, bidData: { user_id: string | Blob; stock_id: string | Blob; amount: string | Blob; price: string | Blob; }): Promise<any> {
+export async function sendBidAdditionRequest(credential: { email: string | Blob; sub: string | Blob; }, bidData: { user_id: string | Blob; stock_id: string | Blob; amount: string | Blob; price: string | Blob; date: string | Blob }): Promise<any> {
     console.log("sendBidAdditionRequest() called on frontend!");
     console.log(credential);
 
@@ -213,6 +214,7 @@ export async function sendBidAdditionRequest(credential: { email: string | Blob;
     formData.append('bidData.stock_id', bidData.stock_id);
     formData.append('bidData.amount', bidData.amount);
     formData.append('bidData.price', bidData.price);
+    formData.append('bidData.date ', bidData.date);
 
     const data = fetch("http://localhost:5000/api/stocks/bid", {
         method: 'POST',
@@ -257,7 +259,7 @@ export async function sendBidAdditionRequest(credential: { email: string | Blob;
 // INFO: Sends a sell addition request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
 // @param sellData: Added sell data
-export async function sendSellAdditionRequest(credential: { email: string | Blob; sub: string | Blob; }, sellData: { user_id: string | Blob; stock_id: string | Blob; amount: string | Blob; price: string | Blob; }): Promise<any> {
+export async function sendSellAdditionRequest(credential: { email: string | Blob; sub: string | Blob; }, sellData: { user_id: string | Blob; stock_id: string | Blob; amount: string | Blob; price: string | Blob; date: string | Blob}): Promise<any> {
     console.log("sendSellAdditionRequest() called on frontend!");
     console.log(credential);
 
@@ -271,6 +273,7 @@ export async function sendSellAdditionRequest(credential: { email: string | Blob
     formData.append('sellData.stock_id', sellData.stock_id);
     formData.append('sellData.amount', sellData.amount);
     formData.append('sellData.price', sellData.price);
+    formData.append('sellData.date', sellData.date);
 
     const data = fetch("http://localhost:5000/api/stocks/sell", {
         method: 'POST',

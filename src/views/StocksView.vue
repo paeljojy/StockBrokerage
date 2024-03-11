@@ -67,7 +67,9 @@ export default {
         },
         async fetchLastTradedPrice() {
             this.currentStock = await getStocksFromServer(this.loginCredential);
-            console.log(this.currentStock.last);
+            console.log("Last price is: " + this.currentStock.last);
+            console.log("Current stock is: " + this.currentStock.name);
+            console.log("Current stock id is: " + this.currentStock.id);
         },
         async get_database_data_from_server() {
             this.db = await getDB();
@@ -126,11 +128,26 @@ export default {
         async requestBidAddition() {
             // INFO: We are not setting the bid id here, 
             // because the server will determine that as the bid is actually being added
+
+            let date = new Date();
+            let milliseconds = date.getMilliseconds();
+            let dateString = date.toLocaleDateString('en-GB', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            }) + ' ' + date.toLocaleTimeString('en-GB', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }) + '.' + milliseconds.toString().padStart(3, '0'); // Add ms manually as date doesn't support it out of the box
+
             const newBidData = {
                 user_id: this.loginCredential.sub,
                 stock_id: this.currentStock.id,
                 amount: this.amount,
-                price: this.price
+                price: this.price,
+                date: dateString 
             };
 
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
@@ -139,11 +156,24 @@ export default {
             console.log(this.bidDataList);
         },
         async requestSellAddition() {
+            let date = new Date();
+            let milliseconds = date.getMilliseconds();
+            let dateString = date.toLocaleDateString('en-GB', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+            }) + ' ' + date.toLocaleTimeString('en-GB', {
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            }) + '.' + milliseconds.toString().padStart(3, '0'); // Add ms manually as date doesn't support it out of the box
             const newSellData = {
                 user_id: this.loginCredential.sub,
                 stock_id: this.currentStock.id,
                 amount: this.amount,
-                price: this.price
+                price: this.price,
+                date: dateString
             };
 
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
