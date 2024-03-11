@@ -12,6 +12,24 @@ export async function getDB(): Promise<any> {
     return data;
 }
 
+export async function getLastTradedPriceForStock(credential: { email: string | Blob; sub: string | Blob; }, stock_id: string): Promise<any> {
+    console.log("getLastTradedPriceForStock() called on frontend!");
+    const formData = new FormData();
+    formData.append('sub', credential.sub);
+
+    const data = fetch('http://localhost:5000/api/stocks/price', {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Data in getLastTradedPriceForStock():")
+            console.log(data) 
+            return data;
+        });
+    return data;
+}
+
 export async function getStocksFromServer(credential: { email: string | Blob; sub: string | Blob; }): Promise<any> {
     console.log("getStocksFromServer() called on frontend!");
     const formData = new FormData();
