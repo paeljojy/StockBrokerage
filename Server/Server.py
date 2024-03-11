@@ -502,34 +502,51 @@ def hello_world():
     return "<p>Hello, World!</p>"
 
 def resolve_cached_data(server, stock_id):
+    
     # 1. Fetch stock data from data base
     # 2. If doesn't exists, insert 
     # 3. Check fetched time is < 3600
     # 4. If not, fetch and update in the database
     # 5. Return up to date Stock object
 
-    stock_data = server.get_cached_data()
-    server.current_time = datetime.now()
+    conn = sqlite3.connect('Database/Main.db')
+    cursor = conn.execute("SELECT * FROM stocks WHERE id = ?", (stock_id, ))
+    stock_list = []
+    for row in cursor:
+        stock_list.append(row)
+    
+    if len(stock_list) < 1:
+        time = datetime.now()
+        res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
+        data = res.json()
+        price = float(data['last'][0])
+        cursor = conn.execute("INSERT INTO stocks (id, name, current_price, fetched_at) VALUES (?, ?, ?, ?)", (stock_id, "", price, time))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return Stock(stock_id, "", price, time)
 
-    # If we have cached data and it's less than an hour old, return it
-    # INFO: 3600s = 1 hour
-    if server.cached_data[stock_id] is not None and (server.current_time - server.last_fetch_time).total_seconds() < 3600:
-        return server.cached_data[stock_id]
-
-    # Otherwise, fetch new data from REST API
-    res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
-    stock_data = res.json()
-
-    # Update the cache and the fetch time
-    server.cached_data[stock_id] = stock_data
-    server.last_fetch_time = server.current_time
-
-    return stock_data[stock_id]
+    stock_time = datetime.strptime(str(stock_list[0][3]), '%Y-%m-%d %H:%M:%S.%f')
+    time = stock_time
+    price = float(stock_list[0][2])
+    current_time = datetime.now()
+    
+    if (current_time - stock_time).total_seconds() > 3600:
+        time = current_time
+        res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
+        data = res.json()
+        price = float(data['last'][0])
+        cursor = conn.execute("UPDATE stocks SET current_price = ?, fetched_at = ? WHERE id = ?", (price, current_time, stock_id))
+        conn.commit()
+        
+    cursor.close()
+    conn.close()
+    return Stock(stock_id, str(stock_list[0][1]), price, time)
 
 @app.route('/api/stocks/price', methods=['POST'])
 def getLastTradedPriceForStock():
     # Get the wanted stock id from the request
-    stock_id = request.form.get("stockData.id", "")
+    stock_id = request.form.get("stock_id", "")
     stock_id = int(stock_id)
     data = resolve_cached_data(server, stock_id)
     return Response(0, "Fetch success: Successfully fetched last traded price data from the server!", data).jsonify()
