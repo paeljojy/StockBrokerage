@@ -569,6 +569,7 @@ def get_trades():
         trades.append(row)
     cursor.close()
     conn.close()
+    # FIXME: Use response object
     return jsonify(trades)
 
 @app.route('/api/getdb')
@@ -580,6 +581,7 @@ def get_db():
         list.append(row)
     cursor.close()
     conn.close()
+    # FIXME: Use response object
     return jsonify(list)
 
 # INFO: Handles log in requests from clients
@@ -707,6 +709,7 @@ def handle_get_bids_request():
     userSubNumber = int(userSub) # INFO: This is used as the user id
 
     if userSubNumber != server.is_user_logged_in(userSubNumber).id:
+        # FIXME: Use response object
         return jsonify("error_userNotLoggedIn, Failed to get bids from server error: user is not logged in!")
         # return Response(1, "")
 
@@ -741,6 +744,7 @@ def handle_get_bids_request():
         cursor.close()
         conn.close()
 
+    # FIXME: Use response object
     # return jsonify("success_getBids, Fetch success: existing user fetched bids!")
 
 # INFO: Handles bid addition requests from the client
@@ -828,7 +832,7 @@ def handle_bid_addition():
     # for performance reasons, closing a connection on a sql database is usually somewhat a costly operation so this
     # might also be the case when using sqlite
 
-    return jsonify("success_bidAdded, Bid addition success: existing user added a bid!")
+    return Response(0, "success_bidAdded, Bid addition success: existing user added a bid!", "success").jsonify()
 
 @app.route('/api/stocks/sell', methods=['POST'])
 def handle_sell_addition():
@@ -843,6 +847,7 @@ def handle_sell_addition():
     # which is not wanted, we want the user to log in first before we allow them to place bids, 
     # as we wouldn't be able to recognize who is making the bids otherwise
     if userSubNumber != server.is_user_logged_in(userSubNumber).id:
+        # FIXME: Use response object
         return jsonify("error_userNotLoggedIn, sell offer addition error: user is not logged in!")
 
     # print("User id of the bid is: {}".format(userSub))
@@ -884,6 +889,7 @@ def handle_sell_addition():
     except:
         cursor.close()
         conn.close()
+        # FIXME: Use response object
         return jsonify("error_offerAddition, Bid addition error: failed to add offer to the database!")
     finally:
         cursor.close()
@@ -893,5 +899,6 @@ def handle_sell_addition():
     # for performance reasons, closing a connection on a sql database is usually somewhat a costly operation so this
     # might also be the case when using sqlite
 
+    # FIXME: Use response object
     return jsonify("success_offerAdded, Bid addition success: existing user added an offer!")
 
