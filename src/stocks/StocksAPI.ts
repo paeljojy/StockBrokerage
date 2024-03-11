@@ -16,6 +16,7 @@ export async function getLastTradedPriceForStock(credential: { email: string | B
     console.log("getLastTradedPriceForStock() called on frontend!");
     const formData = new FormData();
     formData.append('sub', credential.sub);
+    formData.append('stock_id', stock_id);
 
     const data = fetch('http://localhost:5000/api/stocks/price', {
         method: 'POST',
@@ -25,7 +26,7 @@ export async function getLastTradedPriceForStock(credential: { email: string | B
         .then(data => {
             console.log("Data in getLastTradedPriceForStock():")
             console.log(data) 
-            return data;
+            return data.data;
         });
     return data;
 }

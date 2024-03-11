@@ -5,6 +5,7 @@ from datetime import datetime
 import requests
 import time
 import os
+import json
 from enum import Enum
 
 # print("CWD IS: ", os.getcwd())
@@ -46,26 +47,6 @@ class Response:
         return jsonify(self.__dict__)
 
 
-class Stock:
-    id = -1
-    name = ""
-    price = -1
-    fetched_time = None # NOTE: The time that the stocks last traded price was fetched at from the REST API
-
-    def __init__(self, id=-1, name='', price=-1, fetched_time=0):
-        self.id = id
-        self.name = name
-        self.price = price
-        self.fetched_time = fetched_time
-
-    def __hash__(self):
-        return hash((self.id, self.name))
-
-    def __eq__(self, other):
-        return (self.id, self.name) == (other.id, other.name)
-
-    def is_valid(self):
-        return self.id != -1
 
 # INFO: Manages stock trades, bids and sell offers
 # it can be used to add, remove, update and get trades
@@ -390,6 +371,22 @@ class Trade:
         self.price = price
         self.date = date 
 
+class Stock:
+    id : int = -1
+    name : str = ""
+    price : float = -1.0
+    fetched_time : str = '' # NOTE: The time that the stocks last traded price was fetched at from the REST API
+
+    def __init__(self, id : int=-1, name : str='', price : float=-1.0, fetched_time : str=''):
+        self.id = id
+        self.name = name
+        self.price = price
+        self.fetched_time = fetched_time
+
+    def get_data(self):
+        # Make the object into a dictionary for JSON conversion
+        return self.__dict__
+
 class Order:
     user = User()
     id = -1
@@ -524,7 +521,7 @@ def resolve_cached_data(server, stock_id):
         conn.commit()
         cursor.close()
         conn.close()
-        return Stock(stock_id, "", price, time)
+        return Stock(stock_id, "", price, str(time))
 
     stock_time = datetime.strptime(str(stock_list[0][3]), '%Y-%m-%d %H:%M:%S.%f')
     time = stock_time
@@ -541,15 +538,21 @@ def resolve_cached_data(server, stock_id):
         
     cursor.close()
     conn.close()
-    return Stock(stock_id, str(stock_list[0][1]), price, time)
+    return Stock(stock_id, str(stock_list[0][1]), price, str(time))
 
 @app.route('/api/stocks/price', methods=['POST'])
 def getLastTradedPriceForStock():
     # Get the wanted stock id from the request
     stock_id = request.form.get("stock_id", "")
     stock_id = int(stock_id)
-    data = resolve_cached_data(server, stock_id)
-    return Response(0, "Fetch success: Successfully fetched last traded price data from the server!", data).jsonify()
+
+    stocks = []
+    stocks.append(resolve_cached_data(server, stock_id))
+    data = [stock.get_data() for stock in stocks]
+
+    print("Last traded price for stock: \"{}\" is : ${}".format(data[0]['name'], data[0]['price']))
+
+    return Response(0, "Fetch success: Successfully fetched last traded price data from the server!", data[0]).jsonify()
 
 @app.route('/api/stocks/apple', methods=['POST'])
 def get_stocks():

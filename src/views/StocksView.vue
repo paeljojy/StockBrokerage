@@ -29,24 +29,12 @@ export default {
             loginCredential: {},
             amount: 0,
             price: 0,
-            bidData: {
-                user_id: 0,
-                stock_id: 0,
-                amount: 0,
-                price: 0
-            },
             bidDataList: [] as {
                 user_id: number;
                 stock_id: number;
                 amount: number;
                 price: number;
             }[],
-            sellData: {
-                user_id: 0,
-                stock_id: 0,
-                amount: 0,
-                price: 0
-            },
             sellDataList: [] as {
                 user_id: number;
                 stock_id: number;
@@ -57,7 +45,8 @@ export default {
             currentStock: {
                 id: 1,
                 name: 'Apple, Inc (AAPL)',
-                price: 0
+                price: 0,
+                fetched_time: new Date()
             }
         }
     },
@@ -67,10 +56,16 @@ export default {
             console.log(this.stocks);
         },
         async fetchLastTradedPrice() {
-            this.currentStock = await getLastTradedPriceForStock(this.loginCredential, this.currentStock.id);
+            const newCurrentStock = await getLastTradedPriceForStock(this.loginCredential, this.currentStock.id);
+            this.currentStock.price = newCurrentStock.price;
+            this.currentStock.fetched_time = newCurrentStock.fetched_time;
+            this.currentStock.name = newCurrentStock.name;
+            this.currentStock.id = newCurrentStock.id;
+
             console.log("Last price is: " + this.currentStock.price);
             console.log("Current stock is: " + this.currentStock.name);
             console.log("Current stock id is: " + this.currentStock.id);
+            console.log("Fetched time is: " + this.currentStock.fetched_time);
         },
         async get_database_data_from_server() {
             this.db = await getDB();
@@ -103,6 +98,9 @@ export default {
             localStorage.setItem('loginCredential', JSON.stringify(credential));
 
             const ret = sendLogin(this.loginCredential);
+            // FIXME: Only on succesfull login the above code is not tested: test and verify
+            this.fetchLastTradedPrice();
+
             console.log("Send Login responded: " + ret);
             this.isUserLoggedIn = true;
         },
@@ -187,9 +185,6 @@ export default {
         // FIXME: Ask server if the user is logged in
         // this doesn't work atm as the promise returned by this function is not awaited?
         sendLogin(this.loginCredential).then(teppo => console.log("")).then(value => this.isUserLoggedIn = value);
-
-        this.fetchLastTradedPrice();
-
         if (this.isUserLoggedIn)
         {
             const bids = getBidsFromServer(this.loginCredential);
