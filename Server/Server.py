@@ -653,7 +653,7 @@ def handle_get_bids_request():
 
     conn = sqlite3.connect('Database/Main.db')
     # TODO: (Anyone) Link the user id with user name so the users don't see their or other's user ids'
-    cursor = conn.execute("SELECT * FROM BIDS");
+    cursor = conn.execute("SELECT * FROM bids WHERE user_id = ?", (userSub,))   
     # TODO: (Anyone) Something like this: SELECT * FROM BIDS WHERE user_id = user_id
     # and replace "*" with the fields we want to show to the user in the frontend
 
@@ -662,7 +662,13 @@ def handle_get_bids_request():
         bids = []
         for row in cursor:
             bids.append(row)
-        response = Response(0, "Fetch success: Successfully fetched bids from the server!", bids)
+        cursor = conn.execute("SELECT * FROM offers WHERE user_id = ?", (userSub,))
+        conn.commit()
+        offers = []
+        for row in cursor:
+            offers.append(row)
+            
+        response = Response(0, "Fetch success: Successfully fetched bids from the server!", (bids, offers))
         return jsonify(response.get_data())
 
     except:
