@@ -493,7 +493,7 @@ def resolve_cached_data(server):
     server.cached_data = data
     server.last_fetch_time = server.current_time
 
-    return jsonify(data)
+    return data
 
 @app.route('/api/stocks/apple', methods=['POST'])
 def get_stocks():
