@@ -184,7 +184,7 @@ class StockTradeManager:
                                           possibly_matching_sell_offer.date,
                                           1)  # Create a new sell offer with the remaining stocks
 
-                remaining_offer = Order(query_next_bid_id(),
+                remaining_offer = Order(query_next_bid_id("offers"),
                                         possibly_matching_sell_offer.user,
                                         possibly_matching_sell_offer.stock_id,
                                         possibly_matching_sell_offer.amount - newBid.amount, # Calc the remaining stocks

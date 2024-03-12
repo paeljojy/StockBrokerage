@@ -3,11 +3,15 @@ import sqlite3
 
 # NOTE: This should only be called when an connection to the database is already established
 # and connection should be closed after this call MANUALLY
-def query_next_bid_id():
+def query_next_bid_id(table):
     # Query the database for the next available bid id
     # INFO: This is used to add new bids to the database, as the user can have multiple bids
     conn = sqlite3.connect('Database/Main.db')
-    cursor = conn.execute("SELECT MAX(id) FROM bids")
+    cursor = None
+    if table == "bids":
+        cursor = conn.execute("SELECT MAX(id) FROM bids")
+    elif table == "offers":
+        cursor = conn.execute("SELECT MAX(id) FROM offers")
 
     # Determine the next id to be used as an bid id (row id)
     last_id = cursor.fetchone()[0]
