@@ -84,6 +84,7 @@ class StockTradeManager:
 
                 cursor = conn.execute("UPDATE stocks SET current_price = ?, fetched_at = ? WHERE id = ?", (self.current_stock, time, int(stock[0])))
                 conn.commit()
+
                 print("Updated current stock price: ${} and time: {}".format(self.current_stock, time))
 
         # Query the database for bids
@@ -126,7 +127,7 @@ class StockTradeManager:
         pass
 
     # Adds a new sell offer and updates
-    def add_offer(self, newOffer):
+    def add_offer(self, newOffer : Order):
         self.sell_offers.append(newOffer)
         self.update()
 
@@ -135,8 +136,6 @@ class StockTradeManager:
             if bid.price >= newOffer.price:
                 print("Possibly matching sell offer to complete a trade found for the added bid...")
                 possibly_matching_bids.append(bid)
-                print(bid)
-                print(possibly_matching_bids)
 
         if len(possibly_matching_bids) < 1:
             # No possible trades
@@ -149,7 +148,7 @@ class StockTradeManager:
         # NOTE: Remember to remove the owned stocks from the user that is selling the stocks here
 
     # Adds a new bid and updates
-    def add_bid(self, newBid):
+    def add_bid(self, newBid : Order):
         print("Attempting to add a new bid to stock trade manager...")
         print("Bid price: ${}".format(newBid.price))
         print("Bid amount: {} stocks".format(newBid.amount))

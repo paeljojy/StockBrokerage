@@ -170,18 +170,17 @@ def get_db():
 # 1 = error
 @app.route('/api/auth/login', methods=['POST'])
 def handle_login_request():
-
-    userEmail = request.form.get("email", "")
-    userSub = request.form.get("sub", "")
-    first_name = request.form.get("first_name", "")
-    last_name = request.form.get("last_name", "")
+    userEmail : str = request.form.get("email", "")
+    userSub : str = request.form.get("sub", "")
+    first_name : str = request.form.get("first_name", "")
+    last_name : str = request.form.get("last_name", "")
 
     if userSub == 'undefined':
         return Response(0, "Login success: user is already logged in!").jsonify()
 
     # Convert user sub string to int and back to string to remove possible sql injection
-    userSubNumber = int(userSub)
-    userSub = str(userSubNumber)
+    userSubNumber : int = int(userSub)
+    userSub : str = str(userSubNumber)
 
     print("Received email:" + userEmail)
     print("Received sub:" + userSub)
@@ -233,18 +232,18 @@ def handle_login_request():
 # INFO: Handles log out requests
 @app.route('/api/auth/logout', methods=['POST'])
 def handle_logout_request():
-    userEmail = request.form.get("email", "")
-    userSub = request.form.get("sub", "")
+    userEmail : str = request.form.get("email", "")
+    userSub : str  = request.form.get("sub", "")
 
     # Convert user sub string to int 
-    userSubNumber = int(userSub)
+    userSubNumber : int = int(userSub)
 
     # Check if user is actually still logged in
     if userSubNumber != server.is_user_logged_in(userSubNumber).id:
         return Response(1, "Logout error: user is not logged in!", "error").jsonify()
 
     # Convert back to string to remove possible sql injection
-    userSub = str(userSubNumber)
+    userSub : str = str(userSubNumber)
 
     print("Received email:" + userEmail)
     print("Received sub:" + userSub)
@@ -487,20 +486,18 @@ def handle_sell_addition():
 @app.route('/api/stocks/getstockcount', methods=['POST'])
 def get_stock_count():
     # userEmail = request.form.get("email", "")
-    userSub = request.form.get("sub", "")
-    stockId = request.form.get("stockId", "")
+    userSub : str = request.form.get("sub", "")
+    stockId : int = int(request.form.get("stock_id", ""))
 
     # Convert user sub string to int
-    userSubNumber = int(userSub) # INFO: This is used as the user id
+    userSubNumber : int = int(userSub) # INFO: This is used as the user id
 
     if userSubNumber != server.is_user_logged_in(userSubNumber).id:
-        # FIXME: Use response object
-        return jsonify("error_userNotLoggedIn, Failed to get stock amount from server error: user is not logged in!")
-        # return Response(1, "")
+        return Response(1, "error_userNotLoggedIn, Failed to get stock amount from server error: user is not logged in!", "error").jsonify()
 
     conn = sqlite3.connect('Database/Main.db')
     # TODO: (Anyone) Link the user id with user name so the users don't see their or other's user ids'
-    cursor = conn.execute("SELECT amount FROM user_owned_stocks WHERE user_id = ? AND stock_id = ?", (userSub, stockId))   
+    cursor = conn.execute("SELECT amount FROM user_owned_stocks WHERE user_id = ? AND stock_id = ?", (userSub, stockId))
     # TODO: (Anyone) Something like this: SELECT * FROM BIDS WHERE user_id = user_id
     # and replace "*" with the fields we want to show to the user in the frontend
 
