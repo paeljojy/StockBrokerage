@@ -116,6 +116,11 @@ export default {
         formatPrice() {
             this.price = parseFloat(this.price.toFixed(2)); // Rounds to nearest (up to) 2 decimals
         },
+        formateDate(dateTimeString) {
+            const date = new Date(dateTimeString);
+            const options = { year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            return new Intl.DateTimeFormat('default', options).format(date);
+        },
         async requestBids() {
             try {
                 const data = await getBidsFromServer(this.loginCredential);
@@ -223,7 +228,7 @@ export default {
                         <th>Action</th>
                     </tr>
                     <tr v-for="(bid, index) in bidDataList" :key="index">
-                        <td>{{ bid[5] }}</td>      
+                        <td>{{ formateDate(bid[5]) }}</td>      
                         <td>{{ bid[3] }}</td>
                         <td>{{ bid[4] }}</td>
                         <td>
@@ -241,7 +246,7 @@ export default {
                         <th>Action</th>
                     </tr>
                     <tr v-for="(offer, index) in sellDataList" :key="index">
-                        <td>{{ offer[5] }}</td>      
+                        <td>{{ formateDate(offer[5]) }}</td>      
                         <td>{{ offer[3] }}</td>
                         <td>{{ offer[4] }}</td>  
                         <td>
