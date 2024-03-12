@@ -3,7 +3,7 @@ import sqlite3
 
 # NOTE: This should only be called when an connection to the database is already established
 # and connection should be closed after this call MANUALLY
-def query_next_bid_id(table):
+def query_next_id_for_table(table):
     # Query the database for the next available bid id
     # INFO: This is used to add new bids to the database, as the user can have multiple bids
     conn = sqlite3.connect('Database/Main.db')

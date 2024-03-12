@@ -145,6 +145,9 @@ class StockTradeManager:
             self.sell_offers.append(newOffer)
             return
 
+        # FIXME: Actually implement this...
+        # NOTE: Remember to remove the owned stocks from the user that is selling the stocks here
+
     # Adds a new bid and updates
     def add_bid(self, newBid):
         print("Attempting to add a new bid to stock trade manager...")
@@ -199,7 +202,7 @@ class StockTradeManager:
                                           possibly_matching_sell_offer.date,
                                           1)  # Create a new sell offer with the remaining stocks
 
-                remaining_offer = Order(query_next_bid_id("offers"),
+                remaining_offer = Order(query_next_id_for_table("offers"),
                                         possibly_matching_sell_offer.user,
                                         possibly_matching_sell_offer.stock_id,
                                         possibly_matching_sell_offer.amount - newBid.amount, # Calc the remaining stocks
@@ -208,24 +211,32 @@ class StockTradeManager:
                                         1)  # Create a new sell offer that has the remaining stocks, we need a new id for this
 
                 # Remove the bid and the sell offer from the lists
-                cursor = conn.execute("DELETE FROM bids WHERE id = ?", (newBid.id))
+                cursor = conn.execute("DELETE FROM bids WHERE id = ?", (newBid.id, ))
                 try:
                     conn.commit()
 
+                    # Get the current time as the trade is happening now
+                    time = datetime.now()
+                    
                     # Remove the sell offer
                     cursor = conn.execute("DELETE FROM offers WHERE id = ?", (fullfilling_offer.id, ))
                     conn.commit()
 
-                    # TODO:We should insert the trade into the database here
-                    cursor = conn.execute("INSERT INTO trades (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newBid.id, newBid.user.id, newBid.stock_id, newBid.amount, newBid.price))
+                    # Add trade into the database
+                    cursor = conn.execute("INSERT INTO trades (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES (?, ?, ?, ?, ?, ?)", 
+                                          (str(fullfilling_offer.user.id), str(possibly_matching_sell_offer.user.id), int(fullfilling_offer.stock_id), fullfilling_offer.amount, fullfilling_offer.price, str(time)))
+                    conn.commit()
+
+                    # Trade has been made, move the stock to the rightful owner
+                    cursor = conn.execute("UPDATE user_owned_stocks SET amount = amount + ? WHERE user_id = ? AND stock_id = ?", (newBid.amount, str(newBid.user.id), int(newBid.stock_id)))
                     conn.commit()
 
                     # Add a new offer to offers table
-                    cursor = conn.execute("INSERT INTO offers (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (remaining_offer.id, remaining_offer.user.id, remaining_offer.stock_id, remaining_offer.amount, remaining_offer.price))
-                    # conn.commit()
+                    # "INSERT INTO offers (id, user_id, stock_id, amount, price, date) VALUES (1, '104294035584677999327', 1, 2, 160, '2024-03-11 19:19:54.359319');"
+                    cursor = conn.execute("INSERT INTO offers (id, user_id, stock_id, amount, price, date) VALUES (?, ?, ?, ?, ?, ?)", (remaining_offer.id, str(remaining_offer.user.id), remaining_offer.stock_id, remaining_offer.amount, remaining_offer.price, str(possibly_matching_sell_offer.date)))
+                    conn.commit()
 
                 except:
-                    # FIXME: Why does this error even when we successfully add the trade to the database?
                     print("ERROR: Failed to add trade to the database!")
 
                 finally:
@@ -303,7 +314,7 @@ class StockTradeManager:
                         conn = sqlite3.connect('Database/Main.db')
                         # Remove the bid and the sell offer from the lists
                         # cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id))
-                        cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id))
+                        cursor = conn.execute("DELETE FROM bids WHERE id = ?", (bid.id, ))
                         try:
                             conn.commit()
                         except:

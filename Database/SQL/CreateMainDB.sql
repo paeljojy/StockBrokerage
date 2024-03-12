@@ -73,7 +73,7 @@ DROP TABLE IF EXISTS user_owned_stocks;
 -- Create user owned stocks
 CREATE TABLE user_owned_stocks(
     user_id TEXT NOT NULL,
-    stock_id TEXT NOT NULL,
+    stock_id INTEGER NOT NULL,
     amount INTEGER NOT NULL,
     CONSTRAINT user_owned_stock_pk PRIMARY KEY (user_id, stock_id)
 );

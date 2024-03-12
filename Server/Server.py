@@ -372,7 +372,7 @@ def handle_bid_addition():
     if not (abs(price - server.stock_trade_manager.current_stock) <= server.stock_trade_manager.current_stock * 0.1):
         return Response(1, "Price is outside the allowed range!", "error").jsonify()
 
-    newBid = Order(query_next_bid_id("bids"), server.logged_in_users[int(user_id)], stock_id, amount, price, str(date))
+    newBid = Order(query_next_id_for_table("bids"), server.logged_in_users[int(user_id)], stock_id, amount, price, str(date))
 
     # TODO: Query next id from the database
 
@@ -398,7 +398,6 @@ def handle_bid_addition():
 
     try:
         conn.commit()
-        server.stock_trade_manager.add_bid(newBid)
     except:
         # cursor.close()
         # conn.close()
@@ -407,6 +406,9 @@ def handle_bid_addition():
     finally:
         cursor.close()
         conn.close()
+
+    # All good, we can add the bid to the stock trade manager now
+    server.stock_trade_manager.add_bid(newBid)
 
     # TODO: Depending on what limits we have on the database we might want to keep connections open per logged in user 
     # for performance reasons, closing a connection on a sql database is usually somewhat a costly operation so this
@@ -439,7 +441,7 @@ def handle_sell_addition():
     amount = int(amount)
     price = request.form.get("sellData.price", "")
     price = float(price)
-    newOffer = Order(query_next_bid_id("offers"), server.logged_in_users[int(user_id)], stock_id, amount, price, str(date), 1) # Init a sell offer
+    newOffer = Order(query_next_id_for_table("offers"), server.logged_in_users[int(user_id)], stock_id, amount, price, str(date), 1) # Init a sell offer
 
     # TODO: Query next id from the database
 
