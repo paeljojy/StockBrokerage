@@ -1,12 +1,12 @@
 <script lang="ts">
-import { getStocksFromServer } from '../stocks/StocksAPI.ts'
-import { getLastTradedPriceForStock } from '../stocks/StocksAPI.ts'
-import { getDB } from '../stocks/StocksAPI.ts'
-import { getBidsFromServer } from '../stocks/StocksAPI.ts'
-import { sendLogin } from '../stocks/StocksAPI.ts'
-import { sendLogout } from '../stocks/StocksAPI.ts'
-import { sendBidAdditionRequest } from '../stocks/StocksAPI.ts'
-import { sendSellAdditionRequest } from '../stocks/StocksAPI.ts'
+import { getStocksFromServer } from '../stocks/StocksAPI'
+import { getLastTradedPriceForStock } from '../stocks/StocksAPI'
+import { getDB } from '../stocks/StocksAPI'
+import { getBidsFromServer } from '../stocks/StocksAPI'
+import { sendLogin } from '../stocks/StocksAPI'
+import { sendLogout } from '../stocks/StocksAPI'
+import { sendBidAdditionRequest } from '../stocks/StocksAPI'
+import { sendSellAdditionRequest } from '../stocks/StocksAPI'
 import { decodeCredential } from 'vue3-google-login'
 import { isProxy, toRaw } from 'vue';
 
@@ -128,6 +128,8 @@ export default {
             // INFO: We are not setting the bid id here, 
             // because the server will determine that as the bid is actually being added
 
+            // FIXME: This is actually super dumb that we are sending the date from the client
+            // We should be getting the date from the server
             let date = new Date();
             let milliseconds = date.getMilliseconds();
             let dateString = date.toLocaleDateString('en-GB', {
@@ -159,6 +161,8 @@ export default {
             console.log(this.bidDataList);
         },
         async requestSellAddition() {
+            // FIXME: This is actually super dumb that we are sending the date from the client
+            // We should be getting the date from the server
             let date = new Date();
             let milliseconds = date.getMilliseconds();
             let dateString = date.toLocaleDateString('en-GB', {
@@ -188,11 +192,11 @@ export default {
     mounted() {
         // FIXME: Ask server if the user is logged in
         // this doesn't work atm as the promise returned by this function is not awaited?
-        sendLogin(this.loginCredential).then(teppo => console.log("")).then(value => this.isUserLoggedIn = value);
+        sendLogin(this.loginCredential).then(temp => console.log("")).then(value => this.isUserLoggedIn = value);
         if (this.isUserLoggedIn)
         {
             const bids = getBidsFromServer(this.loginCredential);
-            for (bid in bids)
+            for (let bid in bids)
             {
                 this.bidDataList.push(bid);
             }
