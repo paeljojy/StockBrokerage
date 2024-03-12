@@ -484,3 +484,42 @@ def handle_sell_addition():
     # FIXME: Use response object
     return jsonify("success_offerAdded, Bid addition success: existing user added an offer!")
 
+@app.route('/api/stocks/getstockcount', methods=['POST'])
+def get_stock_count():
+    # userEmail = request.form.get("email", "")
+    userSub = request.form.get("sub", "")
+    stockId = request.form.get("stockId", "")
+
+    # Convert user sub string to int
+    userSubNumber = int(userSub) # INFO: This is used as the user id
+
+    if userSubNumber != server.is_user_logged_in(userSubNumber).id:
+        # FIXME: Use response object
+        return jsonify("error_userNotLoggedIn, Failed to get stock amount from server error: user is not logged in!")
+        # return Response(1, "")
+
+    conn = sqlite3.connect('Database/Main.db')
+    # TODO: (Anyone) Link the user id with user name so the users don't see their or other's user ids'
+    cursor = conn.execute("SELECT amount FROM user_owned_stocks WHERE user_id = ? AND stock_id = ?", (userSub, stockId))   
+    # TODO: (Anyone) Something like this: SELECT * FROM BIDS WHERE user_id = user_id
+    # and replace "*" with the fields we want to show to the user in the frontend
+
+    try:
+        conn.commit()
+        stockAmount = []
+        for row in cursor:
+            stockAmount.append(row[0])
+
+        response = Response(0, "Fetch success: Successfully fetched stock amount from the server!", stockAmount)
+        return jsonify(response.get_data())
+
+    except:
+        cursor.close()
+        conn.close()
+        response = Response(1, "Fetch error: Failed to get stock amount from the database!", "error")
+        return jsonify(response)
+
+        # return jsonify("error_getBids, Fetch error: failed to get bids from the database!")
+    finally:
+        cursor.close()
+        conn.close()

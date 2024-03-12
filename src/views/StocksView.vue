@@ -3,6 +3,7 @@ import { getStocksFromServer } from '../stocks/StocksAPI'
 import { getLastTradedPriceForStock } from '../stocks/StocksAPI'
 import { getDB } from '../stocks/StocksAPI'
 import { getBidsFromServer } from '../stocks/StocksAPI'
+import { getStockCountFromServer } from '../stocks/StocksAPI'
 import { sendLogin } from '../stocks/StocksAPI'
 import { sendLogout } from '../stocks/StocksAPI'
 import { sendBidAdditionRequest } from '../stocks/StocksAPI'
@@ -29,6 +30,7 @@ export default {
             loginCredential: {},
             amount: 0,
             price: 0,
+            stockCount: 0,
             bidDataList: [] as {
                 id: number;
                 user_id: number;
@@ -109,6 +111,7 @@ export default {
             this.isUserLoggedIn = true;
 
             this.requestBids();
+            this.fetchStockCount();
         },
         formatPrice() {
             this.price = parseFloat(this.price.toFixed(2)); // Rounds to nearest (up to) 2 decimals
@@ -123,6 +126,13 @@ export default {
             } catch (error) {
                 console.error("Error fetching bids:", error);
             }
+        },
+        async fetchStockCount() {
+            const stockCount = await getStockCountFromServer(this.loginCredential, this.currentStock.id);
+
+            // INFO: At the moment we only have one stock, so we can just take the first element
+            // later when we have multiple stocks, we will have to iterate through the array
+            this.stockCount = stockCount[0];
         },
         async requestBidAddition() {
             // INFO: We are not setting the bid id here, 
@@ -190,6 +200,7 @@ export default {
         sendLogin(this.loginCredential).then(temp => console.log("")).then(value => this.isUserLoggedIn = value);
         if (this.isUserLoggedIn)
         {
+            this.fetchStockCount();
             const bids = getBidsFromServer(this.loginCredential);
             for (let bid in bids)
             {
@@ -216,6 +227,7 @@ export default {
                 <h1>Apple, Inc (AAPL)</h1>
                 <div class="price"> {{currentStock.price[0]}} USD</div>
             </header>
+            <div class="stock-count" v-if="isUserLoggedIn">Stocks owned: {{ stockCount }}</div>
             <section class="chart">
                 <!-- CHART -->
             </section>

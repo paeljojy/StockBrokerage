@@ -328,3 +328,40 @@ export async function sendSellAdditionRequest(credential: { email: string | Blob
         );
     return data;
 }
+
+export async function getStockCountFromServer(credential: { email: string | Blob; sub: string | Blob; }, stock_id: string | Blob): Promise<any> {
+    console.log("getStockCountFromServer() called on frontend!");
+    console.log(credential);
+
+    const formData = new FormData();
+    formData.append('email', credential.email);
+    formData.append('sub', credential.sub);
+    formData.append('stock_id', stock_id)
+    const data = fetch("http://localhost:5000/api/stocks/getstockcount", {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Whole response: ");
+            console.log(data);
+            console.log("Status code:" + data.status);
+            console.log("Message: " + data.message);
+            console.log(data.data);
+
+            switch (data.status) {
+                case 0:
+                    {
+                        console.log("Successfully fetched users stock count success !");
+                        return data.data;
+                    }
+                case 1:
+                    {
+                        console.log("Couldn't fetch users stock count, is the server running?");
+                        return null;
+                    }
+            }
+        }
+        );
+    return data;
+}
