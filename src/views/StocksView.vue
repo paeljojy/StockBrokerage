@@ -137,28 +137,11 @@ export default {
         async requestBidAddition() {
             // INFO: We are not setting the bid id here, 
             // because the server will determine that as the bid is actually being added
-
-            // FIXME: This is actually super dumb that we are sending the date from the client
-            // We should be getting the date from the server
-            let date = new Date();
-            let milliseconds = date.getMilliseconds();
-            let dateString = date.toLocaleDateString('en-GB', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-            }) + ' ' + date.toLocaleTimeString('en-GB', {
-                hour12: false,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            }) + '.' + milliseconds.toString().padStart(3, '0'); // Add ms manually as date doesn't support it out of the box
-
             const newBidData = {
                 user_id: this.loginCredential.sub,
                 stock_id: this.currentStock.id,
                 amount: this.amount,
-                price: this.price,
-                date: dateString 
+                price: this.price
             };
 
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
@@ -167,26 +150,11 @@ export default {
             this.requestBids();
         },
         async requestSellAddition() {
-            // FIXME: This is actually super dumb that we are sending the date from the client
-            // We should be getting the date from the server
-            let date = new Date();
-            let milliseconds = date.getMilliseconds();
-            let dateString = date.toLocaleDateString('en-GB', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-            }) + ' ' + date.toLocaleTimeString('en-GB', {
-                hour12: false,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            }) + '.' + milliseconds.toString().padStart(3, '0'); // Add ms manually as date doesn't support it out of the box
             const newSellData = {
                 user_id: this.loginCredential.sub,
                 stock_id: this.currentStock.id,
                 amount: this.amount,
-                price: this.price,
-                date: dateString
+                price: this.price
             };
 
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
