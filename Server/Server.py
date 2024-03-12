@@ -95,12 +95,13 @@ def resolve_cached_data(server, stock_id):
         time = datetime.now()
         res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
         data = res.json()
+        name = str(data['symbol'][0])
         price = float(data['last'][0])
-        cursor = conn.execute("INSERT INTO stocks (id, name, current_price, fetched_at) VALUES (?, ?, ?, ?)", (stock_id, "", price, time))
+        cursor = conn.execute("INSERT INTO stocks (id, name, current_price, fetched_at) VALUES (?, ?, ?, ?)", (stock_id, name, price, time))
         conn.commit()
         cursor.close()
         conn.close()
-        return Stock(stock_id, "", price, str(time))
+        return Stock(stock_id, name, price, str(time))
 
     stock_time = datetime.strptime(str(stock_list[0][3]), '%Y-%m-%d %H:%M:%S.%f')
     time = stock_time
@@ -112,7 +113,7 @@ def resolve_cached_data(server, stock_id):
         res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
         data = res.json()
         price = float(data['last'][0])
-        cursor = conn.execute("UPDATE stocks SET current_price = ?, fetched_at = ? WHERE id = ?", (price, current_time, stock_id))
+        cursor = conn.execute("UPDATE stocks SET current_price = ?, fetched_at = ? WHERE id = ?", (price, time, stock_id))
         conn.commit()
         
     cursor.close()
@@ -353,7 +354,7 @@ def handle_bid_addition():
     user_id = request.form.get("bidData.user_id", "")
     stock_id = request.form.get("bidData.stock_id", "")
     amount = request.form.get("bidData.amount", "")
-    date = request.form.get("bidData.date", "")
+    date = datetime.now()
     amount = int(amount)
 
     # FIXME: Use different status code in the response to indicate different problems with the bid
@@ -371,7 +372,7 @@ def handle_bid_addition():
     if not (abs(price - server.stock_trade_manager.current_stock) <= server.stock_trade_manager.current_stock * 0.1):
         return Response(1, "Price is outside the allowed range!", "error").jsonify()
 
-    newBid = Order(query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price, date)
+    newBid = Order(query_next_bid_id("bids"), server.logged_in_users[int(user_id)], stock_id, amount, price, str(date))
 
     # TODO: Query next id from the database
 
@@ -433,12 +434,12 @@ def handle_sell_addition():
     # User is surely logged in: Parse all the fields (of the bid) from the request form
     user_id = request.form.get("sellData.user_id", "")
     stock_id = request.form.get("sellData.stock_id", "")
-    date = request.form.get("sellData.date", "")
+    date = datetime.now()
     amount = request.form.get("sellData.amount", "")
     amount = int(amount)
     price = request.form.get("sellData.price", "")
     price = float(price)
-    newOffer = Order(query_next_bid_id(), server.logged_in_users[int(user_id)], stock_id, amount, price, date, 1) # Init a sell offer
+    newOffer = Order(query_next_bid_id("offers"), server.logged_in_users[int(user_id)], stock_id, amount, price, str(date), 1) # Init a sell offer
 
     # TODO: Query next id from the database
 
