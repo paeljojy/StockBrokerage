@@ -153,12 +153,8 @@ export default {
 
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
 
-            // FIXME: Check if the bid addition succeeded
-            sendBidAdditionRequest(this.loginCredential, newBidData);
-            // FIXME: and then do this?
-            this.bidDataList.push({ ...newBidData });
-
-            console.log(this.bidDataList);
+            const response = await sendBidAdditionRequest(this.loginCredential, newBidData);
+            this.requestBids();
         },
         async requestSellAddition() {
             // FIXME: This is actually super dumb that we are sending the date from the client
@@ -184,9 +180,8 @@ export default {
             };
 
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
-            sendSellAdditionRequest(this.loginCredential, newSellData);
-            this.sellDataList.push({ ...newSellData });
-            console.log(this.sellDataList);
+            const response = await sendSellAdditionRequest(this.loginCredential, newSellData);
+            this.requestBids();
         }
     },
     mounted() {
@@ -248,7 +243,7 @@ export default {
                         <th>Action</th>
                     </tr>
                     <tr v-for="(bid, index) in bidDataList" :key="index">
-                        <td>Date</td>      
+                        <td>{{ bid[5] }}</td>      
                         <td>{{ bid[3] }}</td>
                         <td>{{ bid[4] }}</td>
                         <td>
@@ -266,7 +261,7 @@ export default {
                         <th>Action</th>
                     </tr>
                     <tr v-for="(offer, index) in sellDataList" :key="index">
-                        <td>Date</td>      
+                        <td>{{ offer[5] }}</td>      
                         <td>{{ offer[3] }}</td>
                         <td>{{ offer[4] }}</td>  
                         <td>
@@ -278,7 +273,7 @@ export default {
         </div>
         <div class="stocks">
             <h1>This is the stocks trading page</h1>
-            <button @click="fetchStocks">Fetch Stocks</button>
+            <button @click="fetchStocks">Print bid list</button>
             <button @click="get_database_data_from_server">Fetch Users from DB</button>
             <!-- <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button> -->
         </div>
