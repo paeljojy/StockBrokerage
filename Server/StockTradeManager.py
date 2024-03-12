@@ -130,6 +130,21 @@ class StockTradeManager:
         self.sell_offers.append(newOffer)
         self.update()
 
+        possibly_matching_bids = []
+        for bid in self.bids:
+            if bid.price >= newOffer.price:
+                print("Possibly matching sell offer to complete a trade found for the added bid...")
+                possibly_matching_bids.append(bid)
+                print(bid)
+                print(possibly_matching_bids)
+
+        if len(possibly_matching_bids) < 1:
+            # No possible trades
+            # Add the sell offer to the list and return
+            print("No possible trades found for the added sell offer...\nAdding sell offer to the stock trade manager.")
+            self.sell_offers.append(newOffer)
+            return
+
     # Adds a new bid and updates
     def add_bid(self, newBid):
         print("Attempting to add a new bid to stock trade manager...")
