@@ -881,14 +881,14 @@ def handle_sell_addition():
 
     # Make prepared statement instead of using raw sql
     # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
-    cursor = conn.execute("INSERT INTO offers (id, user_id, stock_id, amount, price) VALUES (?, ?, ?, ?, ?)", (newOffer.id, str(newOffer.user.id), newOffer.stock_id, newOffer.amount, newOffer.price))
+    cursor = conn.execute("INSERT INTO offers (id, user_id, stock_id, amount, price, date) VALUES (?, ?, ?, ?, ?, ?)", (newOffer.id, str(newOffer.user.id), newOffer.stock_id, newOffer.amount, newOffer.price, newOffer.date))
 
     try:
         conn.commit()
         server.stock_trade_manager.add_offer(newOffer)
     except:
-        cursor.close()
-        conn.close()
+        # cursor.close()
+        # conn.close()
         # FIXME: Use response object
         return jsonify("error_offerAddition, Bid addition error: failed to add offer to the database!")
     finally:
