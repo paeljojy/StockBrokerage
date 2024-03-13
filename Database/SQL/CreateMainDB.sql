@@ -81,9 +81,9 @@ CREATE TABLE user_owned_stocks(
 DROP TABLE IF EXISTS user_owned_money;
 
 -- Create user owned money, this is the amount of money a user has on their account
-CREATE TABLE user_owned_stocks(
+CREATE TABLE user_owned_money(
     user_id TEXT NOT NULL,
-    amount REAL NOT NULL,
+    amount REAL NOT NULL, -- NOTE: In US dollars (USD/$)
     CONSTRAINT user_owned_money_pk PRIMARY KEY (user_id)
 );
 
