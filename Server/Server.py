@@ -357,6 +357,38 @@ def handle_bid_cancellation():
 
     return Response(0, "success_bidRemoved, Bid remove success: existing user removed a bid!", "success").jsonify()
 
+# INFO: Handles request to remove a specific offer
+@app.route('/api/stocks/offer_cancel', methods=['POST'])
+def handle_offer_cancellation():
+    offerId = request.form.get("offer", "")
+    stockId = request.form.get("stock", "")
+    userSub = request.form.get("sub", "")
+
+    userSubNumber = int(userSub)
+    offerIdNumber = int(offerId)
+    stockIdNumber = int(stockId)
+
+    if userSubNumber != server.is_user_logged_in(userSubNumber).id:
+        return Response(1, "error_userNotLoggedIn, Failed to get offers from server error: user is not logged in!", "error").jsonify()
+        
+    conn = sqlite3.connect('Database/Main.db')
+
+    # Make prepared statement instead of using raw sql
+    # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
+    cursor = conn.execute("DELETE FROM offers WHERE id = ? AND user_id = ? AND stock_id = ?", (offerIdNumber, userSub, stockIdNumber))
+
+    try:
+        conn.commit()
+        if not (server.stock_trade_manager.remove_sell_offer(offerIdNumber, userSubNumber, stockIdNumber)):
+            raise Exception()
+    except:
+        return Response(1, "error_offerCancellation, Offer cancellation error: failed to remove offer from the database!", "error").jsonify()
+    finally:
+        cursor.close()
+        conn.close()
+
+    return Response(0, "success_offerRemoved, Offer remove success: existing user removed an offer!", "success").jsonify()
+
 # INFO: Handles bid addition requests from the client
 # This is the trade request that the user makes to the server
 # with the intention of buying a stock with a given

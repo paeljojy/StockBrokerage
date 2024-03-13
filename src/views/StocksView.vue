@@ -8,6 +8,7 @@ import { getStockCountFromServer } from '../stocks/StocksAPI'
 import { sendLogin } from '../stocks/StocksAPI'
 import { sendLogout } from '../stocks/StocksAPI'
 import { sendBidCancellationRequest } from '../stocks/StocksAPI'
+import { sendOfferCancellationRequest } from '../stocks/StocksAPI'
 import { sendBidAdditionRequest } from '../stocks/StocksAPI'
 import { sendSellAdditionRequest } from '../stocks/StocksAPI'
 import { decodeCredential } from 'vue3-google-login'
@@ -160,6 +161,10 @@ export default {
         },
         async cancelBid(bid) {
             const response = await sendBidCancellationRequest(this.loginCredential, bid);
+            this.requestBids();
+        },
+        async cancelOffer(offer) {
+            const response = await sendOfferCancellationRequest(this.loginCredential, offer);
             this.requestBids();
         },
         async requestBidAddition() {
