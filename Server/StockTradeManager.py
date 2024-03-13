@@ -128,7 +128,8 @@ class StockTradeManager:
 
     # Adds a new sell offer and updates
     def add_offer(self, newOffer : Order):
-        self.sell_offers.append(newOffer)
+        # NOTE: line below shouldn't be needed since the new offer is added later
+        # self.sell_offers.append(newOffer)
         self.update()
 
         possibly_matching_bids = []
