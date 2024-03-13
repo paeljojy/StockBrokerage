@@ -52,7 +52,7 @@ export default {
             currentStock: {
                 id: 1,
                 name: 'Apple, Inc (AAPL)',
-                price: 0,
+                price: undefined,
                 fetched_time: new Date()
             }
         }
@@ -203,7 +203,7 @@ export default {
         <div class="stock-container">
             <header>
                 <h1>Apple, Inc (AAPL)</h1>
-                <div class="price"> {{currentStock.price[0]}} USD</div>
+                <div class="price"> {{currentStock.price}} USD</div>
             </header>
             <div class="stock-count" v-if="isUserLoggedIn">Stocks owned: {{ stockCount }}</div>
             <section class="chart">
