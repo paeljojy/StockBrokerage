@@ -78,6 +78,15 @@ CREATE TABLE user_owned_stocks(
     CONSTRAINT user_owned_stock_pk PRIMARY KEY (user_id, stock_id)
 );
 
+DROP TABLE IF EXISTS user_owned_money;
+
+-- Create user owned money, this is the amount of money a user has on their account
+CREATE TABLE user_owned_stocks(
+    user_id TEXT NOT NULL,
+    amount REAL NOT NULL,
+    CONSTRAINT user_owned_money_pk PRIMARY KEY (user_id)
+);
+
 DROP TABLE IF EXISTS trades;
 
 -- Create trades INFO: trade is a transaction between two users

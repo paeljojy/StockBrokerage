@@ -1,5 +1,4 @@
 <script lang="ts">
-import { getStocksFromServer } from '../stocks/StocksAPI'
 import { getLastTradedPriceForStock } from '../stocks/StocksAPI'
 import { getDB } from '../stocks/StocksAPI'
 import { getTrades } from '../stocks/StocksAPI'
@@ -296,9 +295,7 @@ export default {
         <div>
             <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
             <button @click="sendLogoutRequest" v-if="isUserLoggedIn">Log out</button>
-            <!-- <div id="login-button"> -->
-                <GoogleLogin id="login-button" :callback="sendLoginRequest" v-if="!isUserLoggedIn"/>
-            <!-- </div> -->
+            <GoogleLogin id="login-button" :callback="sendLoginRequest" v-if="!isUserLoggedIn"/>
         </div>
         <div v-if="isUserLoggedIn">
             <h2>Trades made on this server</h2>
