@@ -165,6 +165,7 @@ export default {
             };
             const response = await sendBidCancellationRequest(this.loginCredential, bidData);
             this.requestBids();
+            this.fetchStockCount();
         },
         async cancelOffer(offer) {
             const offerData = {
@@ -173,6 +174,7 @@ export default {
             };
             const response = await sendOfferCancellationRequest(this.loginCredential, offerData);
             this.requestBids();
+            this.fetchStockCount();
         },
         async requestBidAddition() {
             // INFO: We are not setting the bid id here, 
