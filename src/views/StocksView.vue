@@ -159,11 +159,19 @@ export default {
             this.stockCount = stockCount[0];
         },
         async cancelBid(bid) {
-            const response = await sendBidCancellationRequest(this.loginCredential, bid);
+            const bidData = {
+                id: bid[0],
+                stock_id: bid[2]
+            };
+            const response = await sendBidCancellationRequest(this.loginCredential, bidData);
             this.requestBids();
         },
         async cancelOffer(offer) {
-            const response = await sendOfferCancellationRequest(this.loginCredential, offer);
+            const offerData = {
+                id: offer[0],
+                stock_id: offer[2]
+            };
+            const response = await sendOfferCancellationRequest(this.loginCredential, offerData);
             this.requestBids();
         },
         async requestBidAddition() {

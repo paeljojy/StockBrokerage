@@ -399,7 +399,7 @@ class StockTradeManager:
     # Removes an old bid
     def remove_bid(self, bidId, userSub, stockId):
         print("Attempting to remove an bid from stock trade manager...")
-        newBidList = [bid for bid in self.bids if not (bid.id == bidId and bid.user.id == userSub and bid.stock_id == str(stockId))]
+        newBidList = [bid for bid in self.bids if not (bid.id == bidId and bid.user.id == userSub and bid.stock_id == stockId)]
         
         if len(newBidList) == len(self.bids) - 1:
             self.bids = newBidList

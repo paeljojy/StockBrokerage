@@ -227,15 +227,15 @@ export async function sendLogout(credential: { email: string | Blob; sub: string
 }
 
 // @param credential: The user's email and sub
-export async function sendBidCancellationRequest(credential: { email: string | Blob; sub: string | Blob; }, bidData: { id: string | Blob; user_id: string | Blob; stock_id: string | Blob; amount: string | Blob; price: string | Blob; date: string | Blob }): Promise<any> {
+export async function sendBidCancellationRequest(credential: { email: string | Blob; sub: string | Blob; }, bidData: { id: string | Blob; stock_id: string | Blob }): Promise<any> {
     console.log("sendBidCancellationRequest() called on frontend!");
     // console.log(bidData);
     // console.log(credential);
 
     const formData = new FormData();
     formData.append('sub', credential.sub);
-    formData.append('bid', bidData[0]);
-    formData.append('stock', bidData[2]);
+    formData.append('bid', bidData.id);
+    formData.append('stock', bidData.stock_id);
     const data = fetch("http://localhost:5000/api/stocks/bid_cancel", {
         method: 'POST',
         body: formData
@@ -266,15 +266,15 @@ export async function sendBidCancellationRequest(credential: { email: string | B
 }
 
 // @param credential: The user's email and sub
-export async function sendOfferCancellationRequest(credential: { email: string | Blob; sub: string | Blob; }, offerData: { id: string | Blob; user_id: string | Blob; stock_id: string | Blob; amount: string | Blob; price: string | Blob; date: string | Blob }): Promise<any> {
+export async function sendOfferCancellationRequest(credential: { email: string | Blob; sub: string | Blob; }, offerData: { id: string | Blob; stock_id: string | Blob }): Promise<any> {
     console.log("sendOfferCancellationRequest() called on frontend!");
     // console.log(offerData);
     // console.log(credential);
 
     const formData = new FormData();
     formData.append('sub', credential.sub);
-    formData.append('offer', offerData[0]);
-    formData.append('stock', offerData[2]);
+    formData.append('offer', offerData.id);
+    formData.append('stock', offerData.stock_id);
     const data = fetch("http://localhost:5000/api/stocks/offer_cancel", {
         method: 'POST',
         body: formData

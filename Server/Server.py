@@ -299,6 +299,9 @@ def handle_bid_cancellation():
 
     try:
         conn.commit()
+
+        # remove_bid returns true if all went ok. Otherwise an exception is raised and
+        # it will be handled in the except block.
         if not (server.stock_trade_manager.remove_bid(bidIdNumber, userSubNumber, stockIdNumber)):
             raise Exception()
     except:
@@ -327,10 +330,25 @@ def handle_offer_cancellation():
 
     # Make prepared statement instead of using raw sql
     # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
+    cursor = conn.execute("SELECT amount FROM offers WHERE id = ? AND user_id = ? AND stock_id = ?", (offerIdNumber, userSub, stockIdNumber))
+    amounts = []
+    for row in cursor:
+        amounts.append(row)
+
+    if len(amounts) != 1:
+        return Response(1, "error_offerCancellation, Offer cancellation error: failed to remove offer from the database!", "error").jsonify()
+
     cursor = conn.execute("DELETE FROM offers WHERE id = ? AND user_id = ? AND stock_id = ?", (offerIdNumber, userSub, stockIdNumber))
 
     try:
         conn.commit()
+
+        # Return the amount of stocks to the user's stock count
+        cursor = conn.execute("UPDATE user_owned_stocks SET amount = amount + ? WHERE user_id = ? AND stock_id = ?", (amounts[0][0], userSub, stockId))
+        conn.commit()
+
+        # remove_sell_offer returns true if all went ok. Otherwise an exception is raised and
+        # it will be handled in the except block.
         if not (server.stock_trade_manager.remove_sell_offer(offerIdNumber, userSubNumber, stockIdNumber)):
             raise Exception()
     except:
