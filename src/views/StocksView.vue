@@ -2,6 +2,7 @@
 import { getStocksFromServer } from '../stocks/StocksAPI'
 import { getLastTradedPriceForStock } from '../stocks/StocksAPI'
 import { getDB } from '../stocks/StocksAPI'
+import { getTrades } from '../stocks/StocksAPI'
 import { getBidsFromServer } from '../stocks/StocksAPI'
 import { getStockCountFromServer } from '../stocks/StocksAPI'
 import { sendLogin } from '../stocks/StocksAPI'
@@ -48,6 +49,14 @@ export default {
                 price: number;
                 date: string;
             }[],
+            tradeDataList: [] as {
+                buyer: string;
+                seller: string;
+                stock_id: number;
+                amount: number;
+                price: number;
+                date: string;
+            }[],
             // TODO: Query these from the server when we open the stock page
             currentStock: {
                 id: 1,
@@ -76,6 +85,15 @@ export default {
         },
         async get_database_data_from_server() {
             this.db = await getDB();
+        },
+        async requestTrades() {
+            try {
+                this.tradeDataList = await getTrades();
+                console.log("Server Trades:");
+                console.log(this.tradeDataList);
+            } catch (error) {
+                console.error("Error fetching bids:", error);
+            }
         },
         async sendLogoutRequest() {
             const loggedOutSuccessFully = true;
@@ -273,6 +291,28 @@ export default {
             <!-- <div id="login-button"> -->
                 <GoogleLogin id="login-button" :callback="sendLoginRequest" v-if="!isUserLoggedIn"/>
             <!-- </div> -->
+        </div>
+        <div>
+            <h2>Trades made on this server</h2>
+            <table class="Bids">
+                <tr>
+                    <th>Buyer</th>
+                    <th>Seller</th>
+                    <th>Stock</th>
+                    <th>Amount</th>
+                    <th>Price</th>
+                    <th>Date</th>
+                </tr>
+                <tr v-for="(trade, index) in tradeDataList" :key="index">      
+                    <td>{{ trade[0] }}</td>
+                    <td>{{ trade[1] }}</td>
+                    <td>Apple, Inc (AAPL)</td>
+                    <td>{{ trade[3] }}</td>
+                    <td>{{ trade[4] }}</td>
+                    <td>{{ formateDate(trade[5]) }}</td>
+                </tr>
+            </table>
+            <button @click="requestTrades">Fetch server trades</button>
         </div>
         <!-- <div> -->
         <!--     <input type="sendLoginRequest" v-model="email" /> -->

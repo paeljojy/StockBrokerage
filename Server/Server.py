@@ -143,14 +143,13 @@ def get_stocks():
 @app.route('/api/stocks/public/trades')
 def get_trades():
     conn = sqlite3.connect('Database/Main.db')
-    cursor = conn.execute("SELECT * FROM trades")
+    cursor = conn.execute("SELECT * FROM trades ORDER BY time")
     trades = []
     for row in cursor:
         trades.append(row)
     cursor.close()
     conn.close()
-    # FIXME: Use response object
-    return jsonify(trades)
+    return Response(0, "Fetch success: Successfully fetched trades from the server!", trades).jsonify()
 
 @app.route('/api/getdb')
 def get_db():

@@ -12,6 +12,17 @@ export async function getDB(): Promise<any> {
     return data;
 }
 
+export async function getTrades(): Promise<any> {
+    console.log("getTrades() called on frontend!");
+    const data = fetch('http://localhost:5000/api/stocks/public/trades')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            return data.data
+        });
+    return data;
+}
+
 export async function getLastTradedPriceForStock(credential: { email: string | Blob; sub: string | Blob; }, stock_id: string): Promise<any> {
     console.log("getLastTradedPriceForStock() called on frontend!");
     const formData = new FormData();
