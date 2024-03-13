@@ -382,10 +382,9 @@ def handle_bid_addition():
     # print("User id of the bid is: {}".format(userSub))
     # User is surely logged in: Parse all the fields (of the bid) from the request form
     user_id = request.form.get("bidData.user_id", "")
-    stock_id = request.form.get("bidData.stock_id", "")
-    amount = request.form.get("bidData.amount", "")
+    stock_id : int = int(request.form.get("bidData.stock_id", ""))
+    amount : int = int(request.form.get("bidData.amount", ""))
     date = datetime.now()
-    amount = int(amount)
 
     # FIXME: Use different status code in the response to indicate different problems with the bid
     # addition so we can display correct messages to the user
@@ -395,8 +394,7 @@ def handle_bid_addition():
         print("The user has to sell at least one stock!")
         return Response(1, "The user has to sell at least one stock!", "error").jsonify()
 
-    price = request.form.get("bidData.price", "")
-    price = float(price)
+    price : float = float(request.form.get("bidData.price", ""))
 
     # Check that the bid price is ±10% of the current market price of the stock
     if not (abs(price - server.stock_trade_manager.current_stock) <= server.stock_trade_manager.current_stock * 0.1):
@@ -407,7 +405,7 @@ def handle_bid_addition():
     # TODO: Query next id from the database
 
     # Convert back to string to remove possible sql injection
-    userSub = str(userSubNumber)
+    userSub : str = str(userSubNumber)
 
     print("Handling bid addition for:")
     print("Received email:" + userEmail)

@@ -133,7 +133,7 @@ class StockTradeManager:
 
         possibly_matching_bids = []
         for bid in self.bids:
-            if bid.price >= newOffer.price:
+            if bid.price >= newOffer.price and newOffer.stock_id == newOffer.stock_id and bid.user.id != newOffer.user.id:
                 print("Possibly matching sell offer to complete a trade found for the added bid...")
                 possibly_matching_bids.append(bid)
 
@@ -174,14 +174,15 @@ class StockTradeManager:
                                         possibly_matching_bid.date,
                                         1)  # Create a new bid that has the remaining stocks, we need a new id for this
             
-        # Remove the bid and the sell offer from the lists
+                # Remove the bid and the sell offer from the lists
                 cursor = conn.execute("DELETE FROM offers WHERE id = ?", (newOffer.id, ))
+
+                # Get the current time as the trade is happening now
+                time = datetime.now()
+
                 try:
                     conn.commit()
 
-                    # Get the current time as the trade is happening now
-                    time = datetime.now()
-                    
                     # Remove the bid
                     cursor = conn.execute("DELETE FROM bids WHERE id = ?", (fullfilling_bid.id, ))
                     conn.commit()
@@ -206,9 +207,6 @@ class StockTradeManager:
                 finally:
                     cursor.close()
                     conn.close()
-
-                # Get time for the trade
-                time = datetime.now()
 
                 # Add a new trade to the trades list
                 self.add_trade(newOffer, fullfilling_bid, time)
@@ -277,7 +275,7 @@ class StockTradeManager:
         # you are able to only sell one or more stocks at the time
         possibly_matching_sell_offers = []
         for sell_offer in self.sell_offers:
-            if newBid.price >= sell_offer.price:
+            if newBid.price >= sell_offer.price and newBid.stock_id == sell_offer.stock_id and newBid.user.id != sell_offer.user.id:
                 # Found possible trade
                 print("Possibly matching sell offer to complete a trade found for the added bid...")
                 possibly_matching_sell_offers.append(sell_offer)
@@ -310,14 +308,14 @@ class StockTradeManager:
                 print("Offer has more stocks than the bid, splitting the sell offer into two...")
                 # We have to split the sell offer into two sell offers
                 fullfilling_offer = Order(possibly_matching_sell_offer.id,
-                                          possibly_matching_sell_offer.user,
+                                          User(possibly_matching_sell_offer.user.id),
                                           possibly_matching_sell_offer.stock_id,
                                           newBid.amount, possibly_matching_sell_offer.price,
                                           possibly_matching_sell_offer.date,
                                           1)  # Create a new sell offer with the remaining stocks
 
                 remaining_offer = Order(query_next_id_for_table("offers"),
-                                        possibly_matching_sell_offer.user,
+                                        User(possibly_matching_sell_offer.user.id),
                                         possibly_matching_sell_offer.stock_id,
                                         possibly_matching_sell_offer.amount - newBid.amount, # Calc the remaining stocks
                                         possibly_matching_sell_offer.price,
@@ -326,11 +324,13 @@ class StockTradeManager:
 
                 # Remove the bid and the sell offer from the lists
                 cursor = conn.execute("DELETE FROM bids WHERE id = ?", (newBid.id, ))
+
+                # Get the current time as the trade is happening now
+                time = datetime.now()
+
                 try:
                     conn.commit()
 
-                    # Get the current time as the trade is happening now
-                    time = datetime.now()
                     
                     # Remove the sell offer
                     cursor = conn.execute("DELETE FROM offers WHERE id = ?", (fullfilling_offer.id, ))
@@ -338,7 +338,7 @@ class StockTradeManager:
 
                     # Add trade into the database
                     cursor = conn.execute("INSERT INTO trades (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES (?, ?, ?, ?, ?, ?)", 
-                                          (str(fullfilling_offer.user.id), str(possibly_matching_sell_offer.user.id), int(fullfilling_offer.stock_id), fullfilling_offer.amount, fullfilling_offer.price, str(time)))
+                                          (str(newBid.user.id), str(possibly_matching_sell_offer.user.id), int(fullfilling_offer.stock_id), fullfilling_offer.amount, fullfilling_offer.price, str(time)))
                     conn.commit()
 
                     # Trade has been made, move the stock to the rightful owner
@@ -357,14 +357,11 @@ class StockTradeManager:
                     cursor.close()
                     conn.close()
 
-                # Get time for the trade
-                time = datetime.now()
-
                 # Add a new trade to the trades list
                 self.add_trade(newBid, fullfilling_offer, time)
 
                 # and then add the remaining stock offer to the sell offers list
-                self.add_offer(remaining_offer)
+                self.add_offer(remaining_offer)  # NOTE: this will try to match the remaining stocks with a matching bid
 
             # Sell offer has the equal or less amount of stocks than the bid
             # If the sell offer has less or equal amount of stocks than the bid
