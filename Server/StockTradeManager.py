@@ -250,7 +250,7 @@ class StockTradeManager:
     # Removes an old sell offer
     def remove_sell_offer(self, sell_offer_Id, userSub, stockId):
         print("Attempting to remove an sell offer from stock trade manager...")
-        newSellOfferList = [sell_offer for sell_offer in self.sell_offers if not (sell_offer_Id.id == sell_offer_Id and sell_offer.user.id == userSub and sell_offer.stock_id == str(stockId))]
+        newSellOfferList = [sell_offer for sell_offer in self.sell_offers if not (sell_offer.id == sell_offer_Id and sell_offer.user.id == userSub and sell_offer.stock_id == stockId)]
         
         if len(newSellOfferList) == len(self.sell_offers) - 1:
             self.sell_offers = newSellOfferList
