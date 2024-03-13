@@ -144,7 +144,122 @@ class StockTradeManager:
             self.sell_offers.append(newOffer)
             return
 
-        # FIXME: Actually implement this...
+        # A possible trade
+        # Bid order priority - Highest Price to Lowest price
+        possibly_matching_bids.sort(key=lambda x: x.price, reverse=True)
+
+        # Match the sell offer with the bid
+        for possibly_matching_bid in possibly_matching_bids:
+            stocks_in_bid = possibly_matching_bid.amount
+
+            conn = sqlite3.connect('Database/Main.db')
+        
+            # If the sell offer has more stocks than the bid
+            # aka. we overflow the bid
+            if newOffer.amount > stocks_in_bid:
+                print("Offer has more stocks than the bid, splitting the bid into two...")
+                # We have to split the bid into two bids
+                fullfilling_bid = Order(possibly_matching_bid.id,
+                                          possibly_matching_bid.user,
+                                          possibly_matching_bid.stock_id,
+                                          newOffer.amount, possibly_matching_bid.price,
+                                          possibly_matching_bid.date,
+                                          1)  # Create a new bid with the remaining stocks
+
+                remaining_bid = Order(query_next_id_for_table("bids"),
+                                        possibly_matching_bid.user,
+                                        possibly_matching_bid.stock_id,
+                                        possibly_matching_bid.amount - newOffer.amount, # Calc the remaining stocks
+                                        possibly_matching_bid.price,
+                                        possibly_matching_bid.date,
+                                        1)  # Create a new bid that has the remaining stocks, we need a new id for this
+            
+        # Remove the bid and the sell offer from the lists
+                cursor = conn.execute("DELETE FROM offers WHERE id = ?", (newOffer.id, ))
+                try:
+                    conn.commit()
+
+                    # Get the current time as the trade is happening now
+                    time = datetime.now()
+                    
+                    # Remove the bid
+                    cursor = conn.execute("DELETE FROM bids WHERE id = ?", (fullfilling_bid.id, ))
+                    conn.commit()
+
+                    # Add trade into the database
+                    cursor = conn.execute("INSERT INTO trades (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES (?, ?, ?, ?, ?, ?)", 
+                                          (str(fullfilling_bid.user.id), str(possibly_matching_bid.user.id), int(fullfilling_bid.stock_id), fullfilling_bid.amount, fullfilling_bid.price, str(time)))
+                    conn.commit()
+
+                    # Trade has been made, move the stock to the rightful owner
+                    cursor = conn.execute("UPDATE user_owned_stocks SET amount = amount + ? WHERE user_id = ? AND stock_id = ?", (newOffer.amount, str(newOffer.user.id), int(newOffer.stock_id)))
+                    conn.commit()
+
+                    # Add a new bid to bids table
+                    # "INSERT INTO bids (id, user_id, stock_id, amount, price, date) VALUES (1, '104294035584677999327', 1, 2, 160, '2024-03-11 19:19:54.359319');"
+                    cursor = conn.execute("INSERT INTO bids (id, user_id, stock_id, amount, price, date) VALUES (?, ?, ?, ?, ?, ?)", (remaining_bid.id, str(remaining_bid.user.id), remaining_bid.stock_id, remaining_bid.amount, remaining_bid.price, str(possibly_matching_bid.date)))
+                    conn.commit()
+
+                except:
+                    print("ERROR: Failed to add trade to the database!")
+
+                finally:
+                    cursor.close()
+                    conn.close()
+
+                # Get time for the trade
+                time = datetime.now()
+
+                # Add a new trade to the trades list
+                self.add_trade(newOffer, fullfilling_bid, time)
+
+                # and then add the remaining bid to the bids list
+                self.add_bid(remaining_bid)
+
+            # Sell offer has the equal or less amount of stocks than the bid
+            # If the sell offer has less or equal amount of stocks than the bid
+            else:
+                print("Offer has equal amount of stocks or less than the bid...\nFully completing the sellers offer with the added bid.")
+                conn = sqlite3.connect('Database/Main.db')
+                # Remove the bid and the sell offer from the lists
+                cursor = conn.execute("DELETE FROM offers WHERE id = ?", (newOffer.id, ))
+                try:
+                    conn.commit()
+
+                    # Get the current time as the trade is happening now
+                    time = datetime.now()
+
+                    # Remove the bid
+                    cursor = conn.execute("DELETE FROM bids WHERE id = ?", (possibly_matching_bid.id, ))
+                    conn.commit()
+
+                    # Add trade into the database
+                    cursor = conn.execute("INSERT INTO trades (buyer_user_id, seller_user_id, stock_id, amount, price, time) VALUES (?, ?, ?, ?, ?, ?)", 
+                                          (str(newOffer.user.id), str(possibly_matching_bid.user.id), int(newOffer.stock_id), newOffer.amount, newOffer.price, str(time), ))
+                    conn.commit()
+
+                    # Add a new trade to the trades list
+                    self.add_trade(newOffer, possibly_matching_bid, time)
+                except:
+                    print("ERROR: Failed to add trade to the database!")
+                finally:
+                    cursor.close()
+                    conn.close()
+
+        self.sell_offers.append(newOffer)
+        self.update()
+
+    # Removes an old sell offer
+    def remove_sell_offer(self, sell_offer_Id, userSub, stockId):
+        print("Attempting to remove an sell offer from stock trade manager...")
+        newSellOfferList = [sell_offer for sell_offer in self.sell_offers if not (sell_offer_Id.id == sell_offer_Id and sell_offer.user.id == userSub and sell_offer.stock_id == str(stockId))]
+        
+        if len(newSellOfferList) == len(self.sell_offers) - 1:
+            self.sell_offers = newSellOfferList
+            return True
+        return False
+
+        # FIXME: Must check if this works...
         # NOTE: Remember to remove the owned stocks from the user that is selling the stocks here
 
     # Adds a new bid and updates
