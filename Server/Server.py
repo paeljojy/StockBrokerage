@@ -160,6 +160,14 @@ def handle_login_request():
             cursor_insert = conn.execute("INSERT INTO logged_in_users (sub, logged_in, logged_in_at) VALUES (?, ?, ?)", (userSub, 1, time))
             conn.commit()
 
+            # Add the user some initial money
+            cursor_insert = conn.execute("INSERT INTO user_owned_money (user_id, amount) VALUES (?, ?)", (userSub, 2000))
+            conn.commit()
+
+            # Add the user some initial stock
+            cursor_insert = conn.execute("INSERT INTO user_owned_stocks (user_id, stock_id, amount) VALUES (?, ?, ?)", (userSub, 1, 100))
+            conn.commit()
+
             cursor_insert.close()
 
             server.logged_in_users[userSubNumber] = (User(userSubNumber, userEmail))
@@ -295,9 +303,21 @@ def handle_bid_cancellation():
 
     # Make prepared statement instead of using raw sql
     # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
+    cursor = conn.execute("SELECT amount, price FROM bids WHERE id = ? AND user_id = ? AND stock_id = ?", (bidId, userSub, stockIdNumber))
+    amounts = []
+    for row in cursor:
+        amounts.append(row)
+
+    if len(amounts) != 1:
+        return Response(1, "Bid cancellation error: failed to remove bid from the database!", "error").jsonify()
+    
     cursor = conn.execute("DELETE FROM bids WHERE id = ? AND user_id = ? AND stock_id = ?", (bidIdNumber, userSub, stockIdNumber))
 
     try:
+        conn.commit()
+
+        # Return the amount of money to the user's money count
+        cursor = conn.execute("UPDATE user_owned_money SET amount = amount + ? WHERE user_id = ?", (amounts[0][0] * amounts[0][1], userSub))
         conn.commit()
 
         # remove_bid returns true if all went ok. Otherwise an exception is raised and
@@ -336,7 +356,7 @@ def handle_offer_cancellation():
         amounts.append(row)
 
     if len(amounts) != 1:
-        return Response(1, "error_offerCancellation, Offer cancellation error: failed to remove offer from the database!", "error").jsonify()
+        return Response(1, "Offer cancellation error: failed to remove offer from the database!", "error").jsonify()
 
     cursor = conn.execute("DELETE FROM offers WHERE id = ? AND user_id = ? AND stock_id = ?", (offerIdNumber, userSub, stockIdNumber))
 
@@ -424,13 +444,23 @@ def handle_bid_addition():
 
     # Make prepared statement instead of using raw sql
     # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
+    cursor = conn.execute("SELECT amount FROM user_owned_money WHERE user_id = ?", (str(newBid.user.id), ))
+    
+    amounts = []
+    for row in cursor:
+        amounts.append(row)
+
+    if len(amounts) != 1 or amounts[0][0] < newBid.amount * newBid.price:
+        return Response(1, "Bid addition error: can't buy with more money than owned", "error").jsonify()
+
     cursor = conn.execute("INSERT INTO bids (id, user_id, stock_id, amount, price, date) VALUES (?, ?, ?, ?, ?, ?)", (newBid.id, str(newBid.user.id), newBid.stock_id, newBid.amount, newBid.price, newBid.date))
 
     try:
         conn.commit()
+        # Remove the amount of money from the user's money count
+        cursor = conn.execute("UPDATE user_owned_money SET amount = amount - ? WHERE user_id = ?", (newBid.amount * newBid.price, str(newBid.user.id)))
+        conn.commit()
     except:
-        # cursor.close()
-        # conn.close()
         print("ERROR: Failed to add bid to the database!")
         return jsonify("error_bidAddition, Bid addition error: failed to add bid to the database!")
     finally:
@@ -469,6 +499,15 @@ def handle_sell_addition():
     date = datetime.now()
     amount :int = int(request.form.get("sellData.amount", ""))
     price : float = float(request.form.get("sellData.price", ""))
+
+    if (amount < 1):
+        print("The user has to buy at least one stock!")
+        return Response(1, "The user has to buy at least one stock!", "error").jsonify()
+
+    # Check that the bid price is ±10% of the current market price of the stock
+    if not (abs(price - server.stock_trade_manager.current_stock) <= server.stock_trade_manager.current_stock * 0.1):
+        return Response(1, "Price is outside the allowed range!", "error").jsonify()
+
     newOffer = Order(query_next_id_for_table("offers"), server.logged_in_users[int(user_id)], stock_id, amount, price, str(date), 1) # Init a sell offer
 
     # TODO: Query next id from the database
@@ -488,6 +527,15 @@ def handle_sell_addition():
     # TODO: Investigate: does sqlite3 have a connection limit similar to MySQL/MariaDB or is just the
     # OS concurrent file read limit
     conn = sqlite3.connect('Database/Main.db')
+
+    cursor = conn.execute("SELECT amount FROM user_owned_stocks WHERE user_id = ? AND stock_id = ?", (str(newOffer.user.id), newOffer.stock_id))
+    
+    amounts = []
+    for row in cursor:
+        amounts.append(row)
+
+    if len(amounts) != 1 or amounts[0][0] < newOffer.amount:
+        return Response(1, "Offer addition error: can't sell more stocks than owned", "error").jsonify()
 
     # Make prepared statement instead of using raw sql
     # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
