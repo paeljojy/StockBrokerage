@@ -52,6 +52,13 @@ class Server():
         conn.close()
 
     def is_user_logged_in(self, id):
+        conn = sqlite3.connect('Database/Main.db')
+
+        # Make prepared statement instead
+        cursor = conn.execute("SELECT * FROM USERS WHERE sub = ?", (userSub, ))
+
+        conn.commit()
+
         if id in self.logged_in_users:
             return self.logged_in_users[id]
         return User()  # Return None if no user with the given id is found

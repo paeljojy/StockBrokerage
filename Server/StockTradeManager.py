@@ -166,6 +166,7 @@ class StockTradeManager:
                 remaining_bid = Order(query_next_id_for_table("bids"),
                                       User(possibly_matching_bid.user.id),
                                       possibly_matching_bid.stock_id,
+                                      # FIXME: shouldn't this be the other way around?
                                       possibly_matching_bid.amount - newOffer.amount, # Calc the remaining stocks
                                       possibly_matching_bid.price,
                                       possibly_matching_bid.date,
@@ -226,6 +227,10 @@ class StockTradeManager:
 
                     # Remove the bid
                     cursor = conn.execute("DELETE FROM bids WHERE id = ?", (possibly_matching_bid.id, ))
+                    conn.commit()
+
+                    # Trade has been made, move the stock to the rightful owner
+                    cursor = conn.execute("UPDATE user_owned_stocks SET amount = amount + ? WHERE user_id = ? AND stock_id = ?", (newOffer.amount, str(newOffer.user.id), int(newOffer.stock_id)))
                     conn.commit()
 
                     # Add trade into the database
@@ -322,8 +327,11 @@ class StockTradeManager:
                                         possibly_matching_sell_offer.date,
                                         1)  # Create a new sell offer that has the remaining stocks, we need a new id for this
 
-                # Remove the bid and the sell offer from the lists
+                # Remove the bid from the database
                 cursor = conn.execute("DELETE FROM bids WHERE id = ?", (newBid.id, ))
+
+                # and server
+                self.sell_offers.remove(possibly_matching_sell_offer)
 
                 # Get the current time as the trade is happening now
                 time = datetime.now()
@@ -331,7 +339,6 @@ class StockTradeManager:
                 try:
                     conn.commit()
 
-                    
                     # Remove the sell offer
                     cursor = conn.execute("DELETE FROM offers WHERE id = ?", (fullfilling_offer.id, ))
                     conn.commit()
