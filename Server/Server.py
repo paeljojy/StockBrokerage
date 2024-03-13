@@ -495,6 +495,12 @@ def handle_sell_addition():
 
     try:
         conn.commit()
+
+        # Remove the amount of stocks from the user's stock count
+        cursor = conn.execute("UPDATE user_owned_stocks SET amount = amount - ? WHERE user_id = ? AND stock_id = ?", (newOffer.amount, userSub, stock_id))
+        conn.commit()
+
+        # All good, we can add the offer to the stock trade manager now
         server.stock_trade_manager.add_offer(newOffer)
     except:
         # cursor.close()

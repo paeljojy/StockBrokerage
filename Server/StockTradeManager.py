@@ -160,19 +160,19 @@ class StockTradeManager:
                 print("Offer has more stocks than the bid, splitting the bid into two...")
                 # We have to split the bid into two bids
                 fullfilling_bid = Order(possibly_matching_bid.id,
-                                          possibly_matching_bid.user,
-                                          possibly_matching_bid.stock_id,
-                                          newOffer.amount, possibly_matching_bid.price,
-                                          possibly_matching_bid.date,
-                                          1)  # Create a new bid with the remaining stocks
+                                        User(possibly_matching_bid.user.id),
+                                        possibly_matching_bid.stock_id,
+                                        newOffer.amount, possibly_matching_bid.price,
+                                        possibly_matching_bid.date,
+                                        1)  # Create a new bid with the remaining stocks
 
                 remaining_bid = Order(query_next_id_for_table("bids"),
-                                        possibly_matching_bid.user,
-                                        possibly_matching_bid.stock_id,
-                                        possibly_matching_bid.amount - newOffer.amount, # Calc the remaining stocks
-                                        possibly_matching_bid.price,
-                                        possibly_matching_bid.date,
-                                        1)  # Create a new bid that has the remaining stocks, we need a new id for this
+                                      User(possibly_matching_bid.user.id),
+                                      possibly_matching_bid.stock_id,
+                                      possibly_matching_bid.amount - newOffer.amount, # Calc the remaining stocks
+                                      possibly_matching_bid.price,
+                                      possibly_matching_bid.date,
+                                      1)  # Create a new bid that has the remaining stocks, we need a new id for this
             
                 # Remove the bid and the sell offer from the lists
                 cursor = conn.execute("DELETE FROM offers WHERE id = ?", (newOffer.id, ))

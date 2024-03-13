@@ -176,6 +176,7 @@ export default {
 
             const response = await sendBidAdditionRequest(this.loginCredential, newBidData);
             this.requestBids();
+            this.fetchStockCount();
         },
         async requestSellAddition() {
             const newSellData = {
@@ -188,6 +189,7 @@ export default {
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
             const response = await sendSellAdditionRequest(this.loginCredential, newSellData);
             this.requestBids();
+            this.fetchStockCount();
         }
     },
     mounted() {
@@ -221,7 +223,8 @@ export default {
         <div class="stock-container">
             <header>
                 <h1>Apple, Inc (AAPL)</h1>
-                <div class="price"> {{currentStock.price}} USD</div>
+                <div v-if="isUserLoggedIn" class="price"> {{currentStock.price}} USD</div>
+                <div v-else class="price">Please log in to see the price</div>
             </header>
             <div class="stock-count" v-if="isUserLoggedIn">Stocks owned: {{ stockCount }}</div>
             <section class="chart">
