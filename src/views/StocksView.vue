@@ -3,7 +3,7 @@ import { getLastTradedPriceForStock } from '../stocks/StocksAPI'
 import { getDB } from '../stocks/StocksAPI'
 import { getTrades } from '../stocks/StocksAPI'
 import { getBidsFromServer } from '../stocks/StocksAPI'
-import { getStockCountFromServer } from '../stocks/StocksAPI'
+import { getStockAndMoneyFromServer } from '../stocks/StocksAPI'
 import { sendLogin } from '../stocks/StocksAPI'
 import { sendLogout } from '../stocks/StocksAPI'
 import { sendBidCancellationRequest } from '../stocks/StocksAPI'
@@ -33,6 +33,7 @@ export default {
             amount: 0,
             price: 0,
             stockCount: 0,
+            moneyCount: 0,
             bidDataList: [] as {
                 id: number;
                 user_id: number;
@@ -130,7 +131,7 @@ export default {
             this.isUserLoggedIn = true;
 
             this.requestBids();
-            this.fetchStockCount();
+            this.fetchStockAndMoney();
         },
         formatPrice() {
             this.price = parseFloat(this.price.toFixed(2)); // Rounds to nearest (up to) 2 decimals
@@ -151,12 +152,13 @@ export default {
                 console.error("Error fetching bids:", error);
             }
         },
-        async fetchStockCount() {
-            const stockCount = await getStockCountFromServer(this.loginCredential, this.currentStock.id);
+        async fetchStockAndMoney() {
+            const data = await getStockAndMoneyFromServer(this.loginCredential, this.currentStock.id);
 
             // INFO: At the moment we only have one stock, so we can just take the first element
             // later when we have multiple stocks, we will have to iterate through the array
-            this.stockCount = stockCount[0];
+            this.stockCount = data[0][0];
+            this.moneyCount = data[1][0];
         },
         async cancelBid(bid) {
             const bidData = {
@@ -165,7 +167,7 @@ export default {
             };
             const response = await sendBidCancellationRequest(this.loginCredential, bidData);
             this.requestBids();
-            this.fetchStockCount();
+            this.fetchStockAndMoney();
         },
         async cancelOffer(offer) {
             const offerData = {
@@ -174,7 +176,7 @@ export default {
             };
             const response = await sendOfferCancellationRequest(this.loginCredential, offerData);
             this.requestBids();
-            this.fetchStockCount();
+            this.fetchStockAndMoney();
         },
         async requestBidAddition() {
             // INFO: We are not setting the bid id here, 
@@ -190,7 +192,7 @@ export default {
 
             const response = await sendBidAdditionRequest(this.loginCredential, newBidData);
             this.requestBids();
-            this.fetchStockCount();
+            this.fetchStockAndMoney();
         },
         async requestSellAddition() {
             const newSellData = {
@@ -203,7 +205,7 @@ export default {
             console.log("Ord(number) - amount: " + this.amount + " price: @ " + this.price);
             const response = await sendSellAdditionRequest(this.loginCredential, newSellData);
             this.requestBids();
-            this.fetchStockCount();
+            this.fetchStockAndMoney();
         }
     },
     mounted() {
@@ -212,7 +214,7 @@ export default {
         sendLogin(this.loginCredential).then(temp => console.log("")).then(value => this.isUserLoggedIn = value);
         if (this.isUserLoggedIn)
         {
-            this.fetchStockCount();
+            this.fetchStockAndMoney();
             const bids = getBidsFromServer(this.loginCredential);
             for (let bid in bids)
             {
@@ -240,6 +242,7 @@ export default {
                 <div v-if="isUserLoggedIn" class="price"> {{currentStock.price}} USD</div>
                 <div v-else class="price">Please log in to see the price</div>
             </header>
+            <div class="stock-count" v-if="isUserLoggedIn">Money on this server: {{ moneyCount }} USD</div>
             <div class="stock-count" v-if="isUserLoggedIn">Stocks owned: {{ stockCount }}</div>
             <section class="chart">
                 <!-- CHART -->

@@ -589,8 +589,13 @@ def get_stock_count():
         stockAmount = []
         for row in cursor:
             stockAmount.append(row[0])
-
-        response = Response(0, "Fetch success: Successfully fetched stock amount from the server!", stockAmount)
+        cursor = conn.execute("SELECT amount FROM user_owned_money WHERE user_id = ?", (userSub,))
+        conn.commit()
+        moneyAmount = []
+        for row in cursor:
+            moneyAmount.append(row[0])
+            
+        response = Response(0, "Fetch success: Successfully fetched stock and money amount from the server!", (stockAmount, moneyAmount))
         return jsonify(response.get_data())
 
     except:

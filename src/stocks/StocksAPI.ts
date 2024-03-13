@@ -416,8 +416,8 @@ export async function sendSellAdditionRequest(credential: { email: string | Blob
     return data;
 }
 
-export async function getStockCountFromServer(credential: { email: string | Blob; sub: string | Blob; }, stock_id: string | Blob): Promise<any> {
-    console.log("getStockCountFromServer() called on frontend!");
+export async function getStockAndMoneyFromServer(credential: { email: string | Blob; sub: string | Blob; }, stock_id: string | Blob): Promise<any> {
+    console.log("getStockAndMoneyFromServer() called on frontend!");
     console.log(credential);
 
     const formData = new FormData();
