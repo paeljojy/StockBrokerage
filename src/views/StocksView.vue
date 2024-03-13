@@ -305,7 +305,7 @@ export default {
             <button v-if="isUserLoggedIn" @click="get_database_data_from_server">Fetch Users from DB</button>
             <!-- <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button> -->
         </div>
-        <div>
+        <div class="login-button-container">
             <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
             <button @click="sendLogoutRequest" v-if="isUserLoggedIn">Log out</button>
             <GoogleLogin id="login-button" :callback="sendLoginRequest" v-if="!isUserLoggedIn"/>
@@ -440,6 +440,12 @@ input::-webkit-outer-spin-button,
 .sell {
   background-color: #f44336;
   color: white;
+}
+
+.login-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 </style>
