@@ -2,8 +2,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import sqlite3
 from datetime import datetime
-import requests
-import time
 
 # Import the stock modules, these contain primitives for the stock trade manager 
 from StockModules import *
@@ -61,73 +59,27 @@ class Server():
     def get_cached_data(self, stock_id):
         return self.cached_data[stock_id]
 
-
 # Initialize the server
 server = Server()
 
 ##############################################################################################################
-## FLASK API Under this TODO: Move this into a separate file
+## FLASK API ENDPOINTS
 ##############################################################################################################
 
-# Initialize the Flask app
-app = Flask(__name__)
+app = Flask(__name__) # Initialize the Flask app
 CORS(app)
 
 @app.route("/")
 def hello_world():
     return "<p>Hello, World!</p>"
 
-def resolve_cached_data(server, stock_id):
-    
-    # 1. Fetch stock data from data base
-    # 2. If doesn't exists, insert 
-    # 3. Check fetched time is < 3600
-    # 4. If not, fetch and update in the database
-    # 5. Return up to date Stock object
-
-    conn = sqlite3.connect('Database/Main.db')
-    cursor = conn.execute("SELECT * FROM stocks WHERE id = ?", (stock_id, ))
-    stock_list = []
-    for row in cursor:
-        stock_list.append(row)
-    
-    if len(stock_list) < 1:
-        time = datetime.now()
-        res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
-        data = res.json()
-        name = str(data['symbol'][0])
-        price = float(data['last'][0])
-        cursor = conn.execute("INSERT INTO stocks (id, name, current_price, fetched_at) VALUES (?, ?, ?, ?)", (stock_id, name, price, time))
-        conn.commit()
-        cursor.close()
-        conn.close()
-        return Stock(stock_id, name, price, str(time))
-
-    stock_time = datetime.strptime(str(stock_list[0][3]), '%Y-%m-%d %H:%M:%S.%f')
-    time = stock_time
-    price = float(stock_list[0][2])
-    current_time = datetime.now()
-    
-    if (current_time - stock_time).total_seconds() > 3600:
-        time = current_time
-        res = requests.get('https://api.marketdata.app/v1/stocks/quotes/AAPL/')
-        data = res.json()
-        price = float(data['last'][0])
-        cursor = conn.execute("UPDATE stocks SET current_price = ?, fetched_at = ? WHERE id = ?", (price, time, stock_id))
-        conn.commit()
-        
-    cursor.close()
-    conn.close()
-    return Stock(stock_id, str(stock_list[0][1]), price, str(time))
-
 @app.route('/api/stocks/price', methods=['POST'])
 def getLastTradedPriceForStock():
-    # Get the wanted stock id from the request
-    stock_id = request.form.get("stock_id", "")
+    stock_id = request.form.get("stock_id", "")  # Get the wanted stock id from the request
     stock_id = int(stock_id)
 
     stocks = []
-    stocks.append(resolve_cached_data(server, stock_id))
+    stocks.append(resolve_cached_data(stock_id))
     data = [stock.get_data() for stock in stocks]
 
     print("Last traded price for stock: \"{}\" is : ${}".format(data[0]['name'], data[0]['price']))
@@ -136,7 +88,7 @@ def getLastTradedPriceForStock():
 
 @app.route('/api/stocks/apple', methods=['POST'])
 def get_stocks():
-    data = resolve_cached_data(server, 1)
+    data = resolve_cached_data(1)
     return Response(0, "Fetch success: Successfully fetched stock data from the server!", data).jsonify()
 
 # INFO: Rest api for getting all the made trades
@@ -495,18 +447,16 @@ def handle_sell_addition():
     # print("User id of the bid is: {}".format(userSub))
     # User is surely logged in: Parse all the fields (of the bid) from the request form
     user_id = request.form.get("sellData.user_id", "")
-    stock_id = request.form.get("sellData.stock_id", "")
+    stock_id : int = int(request.form.get("sellData.stock_id", ""))
     date = datetime.now()
-    amount = request.form.get("sellData.amount", "")
-    amount = int(amount)
-    price = request.form.get("sellData.price", "")
-    price = float(price)
+    amount :int = int(request.form.get("sellData.amount", ""))
+    price : float = float(request.form.get("sellData.price", ""))
     newOffer = Order(query_next_id_for_table("offers"), server.logged_in_users[int(user_id)], stock_id, amount, price, str(date), 1) # Init a sell offer
 
     # TODO: Query next id from the database
 
     # Convert back to string to remove possible sql injection
-    userSub = str(userSubNumber)
+    userSub : str = str(userSubNumber)
 
     print("Handling offer addition for:")
     print("Received email:" + userEmail)

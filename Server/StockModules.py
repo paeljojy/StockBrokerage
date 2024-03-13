@@ -36,8 +36,6 @@ class Response:
     def jsonify(self):
         return jsonify(self.__dict__)
 
-
-
 class User:
     # NOTE: User is not valid if the id is -1
     # also if your subs are really small integers you might have a problem
@@ -62,14 +60,14 @@ class User:
         return self.id != -1
 
 class Trade:
-    buyer_user_id : str = ''
-    seller_user_id : str = ''
+    buyer_user_id : int = -1
+    seller_user_id : int = -1
     stock_id : int = 0
     amount : int = 0
     price : float = 0
     date: str = '1970 01 01 00:00:00.000000'
 
-    def __init__(self, buyer_user_id : str, seller_user_id : str, stock_id : int=1, amount=0, price=-1.0, date='1970 01 01 00:00:00.000000'):
+    def __init__(self, buyer_user_id : int, seller_user_id : int, stock_id : int=1, amount=0, price=-1.0, date='1970 01 01 00:00:00.000000'):
         self.buyer_user_id = buyer_user_id
         self.seller_user_id = seller_user_id
         self.stock_id = stock_id

@@ -128,10 +128,6 @@ class StockTradeManager:
 
     # Adds a new sell offer and updates
     def add_offer(self, newOffer : Order):
-        # NOTE: line below shouldn't be needed since the new offer is added later
-        # self.sell_offers.append(newOffer)
-        self.update()
-
         possibly_matching_bids = []
         for bid in self.bids:
             if bid.price >= newOffer.price and newOffer.stock_id == newOffer.stock_id and bid.user.id != newOffer.user.id:
@@ -251,7 +247,10 @@ class StockTradeManager:
     # Removes an old sell offer
     def remove_sell_offer(self, sell_offer_Id, userSub, stockId):
         print("Attempting to remove an sell offer from stock trade manager...")
-        newSellOfferList = [sell_offer for sell_offer in self.sell_offers if not (sell_offer.id == sell_offer_Id and sell_offer.user.id == userSub and sell_offer.stock_id == stockId)]
+        newSellOfferList = [sell_offer for sell_offer in self.sell_offers
+                                if not (sell_offer.id == sell_offer_Id 
+                                    and sell_offer.user.id == userSub 
+                                    and sell_offer.stock_id == stockId)]
         
         if len(newSellOfferList) == len(self.sell_offers) - 1:
             self.sell_offers = newSellOfferList
