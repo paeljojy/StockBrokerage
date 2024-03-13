@@ -280,9 +280,9 @@ export default {
             </div>
         </div>
         <div class="stocks">
-            <h1>This is the stocks trading page</h1>
-            <button @click="fetchStocks">Print bid list</button>
-            <button @click="get_database_data_from_server">Fetch Users from DB</button>
+            <!-- <h1>This is the stocks trading page</h1> -->
+            <button v-if="isUserLoggedIn" @click="fetchStocks">Print bid list</button>
+            <button v-if="isUserLoggedIn" @click="get_database_data_from_server">Fetch Users from DB</button>
             <!-- <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button> -->
         </div>
         <div>
@@ -292,7 +292,7 @@ export default {
                 <GoogleLogin id="login-button" :callback="sendLoginRequest" v-if="!isUserLoggedIn"/>
             <!-- </div> -->
         </div>
-        <div>
+        <div v-if="isUserLoggedIn">
             <h2>Trades made on this server</h2>
             <table class="Bids">
                 <tr>
