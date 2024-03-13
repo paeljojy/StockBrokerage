@@ -215,6 +215,45 @@ export async function sendLogout(credential: { email: string | Blob; sub: string
     return data;
 }
 
+// @param credential: The user's email and sub
+export async function sendBidCancellationRequest(credential: { email: string | Blob; sub: string | Blob; }, bidData: { id: string | Blob; user_id: string | Blob; stock_id: string | Blob; amount: string | Blob; price: string | Blob; date: string | Blob }): Promise<any> {
+    console.log("sendBidCancellationRequest() called on frontend!");
+    // console.log(bidData);
+    // console.log(credential);
+
+    const formData = new FormData();
+    formData.append('sub', credential.sub);
+    formData.append('bid', bidData[0]);
+    formData.append('stock', bidData[2]);
+    const data = fetch("http://localhost:5000/api/stocks/bid_cancel", {
+        method: 'POST',
+        body: formData
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log("Whole response: ");
+            console.log(data);
+            console.log("Status code:" + data.status);
+            console.log("Message: " + data.message);
+            console.log(data.data);
+
+            switch (data.status) {
+                case 0:
+                    {
+                        console.log("Cancel bid success on existing user!");
+                        return data.data;
+                    }
+                case 1:
+                    {
+                        console.log("Couldn't cancel bid, is the server running?");
+                        return null;
+                    }
+            }
+        }
+        );
+    return data;
+}
+
 // INFO: Sends a bid addition request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
 // @param bidData: Added bid data

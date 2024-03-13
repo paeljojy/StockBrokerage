@@ -284,6 +284,16 @@ class StockTradeManager:
         self.bids.append(newBid)
         self.update()
 
+    # Removes an old bid
+    def remove_bid(self, bidId, userSub, stockId):
+        print("Attempting to remove an bid from stock trade manager...")
+        newBidList = [bid for bid in self.bids if not (bid.id == bidId and bid.user.id == userSub and bid.stock_id == str(stockId))]
+        
+        if len(newBidList) == len(self.bids) - 1:
+            self.bids = newBidList
+            return True
+        return False
+
     # General update that is used whenever a new stock price is fetched 
     # and when bids or sell offers are added 
     # This will update the whole system and match bids with sell offers if possible

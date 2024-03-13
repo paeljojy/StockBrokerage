@@ -326,6 +326,38 @@ def handle_get_bids_request():
     # FIXME: Use response object
     # return jsonify("success_getBids, Fetch success: existing user fetched bids!")
 
+# INFO: Handles request to remove a specific bid
+@app.route('/api/stocks/bid_cancel', methods=['POST'])
+def handle_bid_cancellation():
+    bidId = request.form.get("bid", "")
+    stockId = request.form.get("stock", "")
+    userSub = request.form.get("sub", "")
+
+    userSubNumber = int(userSub)
+    bidIdNumber = int(bidId)
+    stockIdNumber = int(stockId)
+
+    if userSubNumber != server.is_user_logged_in(userSubNumber).id:
+        return Response(1, "error_userNotLoggedIn, Failed to get bids from server error: user is not logged in!", "error").jsonify()
+        
+    conn = sqlite3.connect('Database/Main.db')
+
+    # Make prepared statement instead of using raw sql
+    # NOTE: We convert user id to string here to fit the sub (as it's more than 64 bits and doesn't fit into an int64)
+    cursor = conn.execute("DELETE FROM bids WHERE id = ? AND user_id = ? AND stock_id = ?", (bidIdNumber, userSub, stockIdNumber))
+
+    try:
+        conn.commit()
+        if not (server.stock_trade_manager.remove_bid(bidIdNumber, userSubNumber, stockIdNumber)):
+            raise Exception()
+    except:
+        return Response(1, "error_bidCancellation, Bid cancellation error: failed to remove bid from the database!", "error").jsonify()
+    finally:
+        cursor.close()
+        conn.close()
+
+    return Response(0, "success_bidRemoved, Bid remove success: existing user removed a bid!", "success").jsonify()
+
 # INFO: Handles bid addition requests from the client
 # This is the trade request that the user makes to the server
 # with the intention of buying a stock with a given

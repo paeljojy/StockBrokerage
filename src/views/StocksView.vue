@@ -6,6 +6,7 @@ import { getBidsFromServer } from '../stocks/StocksAPI'
 import { getStockCountFromServer } from '../stocks/StocksAPI'
 import { sendLogin } from '../stocks/StocksAPI'
 import { sendLogout } from '../stocks/StocksAPI'
+import { sendBidCancellationRequest } from '../stocks/StocksAPI'
 import { sendBidAdditionRequest } from '../stocks/StocksAPI'
 import { sendSellAdditionRequest } from '../stocks/StocksAPI'
 import { decodeCredential } from 'vue3-google-login'
@@ -138,6 +139,10 @@ export default {
             // INFO: At the moment we only have one stock, so we can just take the first element
             // later when we have multiple stocks, we will have to iterate through the array
             this.stockCount = stockCount[0];
+        },
+        async cancelBid(bid) {
+            const response = await sendBidCancellationRequest(this.loginCredential, bid);
+            this.requestBids();
         },
         async requestBidAddition() {
             // INFO: We are not setting the bid id here, 
