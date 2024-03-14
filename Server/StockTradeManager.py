@@ -375,8 +375,13 @@ class StockTradeManager:
             else:
                 print("Offer has equal amount of stocks or less than the bid...\nFully completing the sellers offer with the added bid.")
                 conn = sqlite3.connect('Database/Main.db')
+
                 # Remove the bid and the sell offer from the lists
                 cursor = conn.execute("DELETE FROM bids WHERE id = ?", (newBid.id, ))
+
+                # and server
+                self.sell_offers.remove(possibly_matching_sell_offer)
+
                 try:
                     conn.commit()
 
@@ -385,6 +390,10 @@ class StockTradeManager:
 
                     # Remove the sell offer
                     cursor = conn.execute("DELETE FROM offers WHERE id = ?", (possibly_matching_sell_offer.id, ))
+                    conn.commit()
+
+                    # Trade has been made, move the stock to the rightful owner
+                    cursor = conn.execute("UPDATE user_owned_stocks SET amount = amount + ? WHERE user_id = ? AND stock_id = ?", (newBid.amount, str(newBid.user.id), int(newBid.stock_id)))
                     conn.commit()
 
                     # Add trade into the database

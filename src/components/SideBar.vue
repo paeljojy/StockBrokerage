@@ -1,8 +1,8 @@
 <template>
 	<aside :class="`${is_expanded ? 'is-expanded' : ''}`">
-		<div class="logo">
-			<img :src="logoURL" alt="Vue" /> 
-		</div>
+		<!-- <div class="logo"> -->
+		<!-- 	<img :src="logoURL" alt="Vue" />  -->
+		<!-- </div> -->
 
 		<div class="menu-toggle-wrap">
 			<button class="menu-toggle" @click="ToggleMenu">
@@ -28,11 +28,10 @@
                 <a class="fas fa-circle-info" />
 				<span class="text">About</span>
 			</router-link>		
-			<router-link to="/test" class="button">
-				<!-- <span class="material-icons">description</span> -->
-                <a class="fas fa-circle-info" />
-				<span class="text">Testailualue</span>
-			</router-link>			
+			<!-- <router-link to="/test" class="button"> -->
+   <!--              <a class="fas fa-circle-info" /> -->
+			<!-- 	<span class="text">Testailualue</span> -->
+			<!-- </router-link>			 -->
 		</div>
 
         <!-- INFO: Flex is used to push the settings button to the bottom of the sidebar -->

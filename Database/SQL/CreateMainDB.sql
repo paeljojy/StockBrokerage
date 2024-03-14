@@ -1,8 +1,6 @@
 -- INFO: We drop tables if they exist to avoid errors when creating the tables
 -- CAUTION: This will delete all data in the tables when you init the sqlite database
 
-DROP TABLE IF EXISTS users;
-
 -- Create the user table
 CREATE TABLE users (
 	sub TEXT NOT NULL,
@@ -11,8 +9,6 @@ CREATE TABLE users (
     last_name TEXT,
 	CONSTRAINT users_pk PRIMARY KEY (sub)
 );
-
-DROP TABLE IF EXISTS logged_in_users;
 
 -- Create table for currently logged in users
 CREATE TABLE logged_in_users(

@@ -15,15 +15,15 @@ sqlite3 -line Database/Main.db "INSERT INTO users (sub, email, first_name, last_
 # Add some user owned stocks for user
 
 # Owns 69 stocks
-sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id, amount) VALUES ('115529453441494604337', 1, 69);"
-sqlite3 -line Database/Main.db "INSERT INTO user_owned_money (user_id, amount) VALUES ('115529453441494604337', 1337);"
+sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id, amount) VALUES ('115529453441494604337', 1, 50);"
+sqlite3 -line Database/Main.db "INSERT INTO user_owned_money (user_id, amount) VALUES ('115529453441494604337', 1000);"
 
 # Bids two stocks for 160 each
 # sqlite3 -line Database/Main.db "INSERT INTO bids (id, user_id, stock_id, amount, price) VALUES (2, '115529453441494604337', 1, 2, 160);"
 
 # Owns 2 stocks
-sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id, amount) VALUES ('104294035584677999327', 1, 2);"
-sqlite3 -line Database/Main.db "INSERT INTO user_owned_money (user_id, amount) VALUES ('104294035584677999327', 1337);"
+sqlite3 -line Database/Main.db "INSERT INTO user_owned_stocks (user_id, stock_id, amount) VALUES ('104294035584677999327', 1, 5);"
+sqlite3 -line Database/Main.db "INSERT INTO user_owned_money (user_id, amount) VALUES ('104294035584677999327', 1500);"
 
 # User 2 sells 2 stocks
 # sqlite3 -line Database/Main.db "INSERT INTO offers (id, user_id, stock_id, amount, price, date) VALUES (1, '104294035584677999327', 1, 2, 160, '2024-03-11 19:19:54.359319');"
