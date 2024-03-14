@@ -119,7 +119,7 @@ export async function getBidsFromServer(credential: { email: string | Blob; sub:
 
 // INFO: Sends a login request to the server and returns the response to the caller (most likely frontend)
 // @param credential: The user's email and sub
-export async function sendLogin(credential: { email: string | Blob; sub: string, first_name: string, last_name: string | Blob; }): Promise<boolean> {
+export async function sendLogin(credential: { email: string | Blob; sub: string, given_name: string, family_name: string | Blob; }): Promise<boolean> {
     console.log("sendLogin() called on frontend!");
     console.log("Credentials:");
     console.log(credential);
@@ -127,8 +127,8 @@ export async function sendLogin(credential: { email: string | Blob; sub: string,
     const formData = new FormData();
     formData.append('email', credential.email);
     formData.append('sub', credential.sub);
-    formData.append('first_name', credential.first_name);
-    formData.append('last_name', credential.last_name);
+    formData.append('first_name', credential.given_name);
+    formData.append('last_name', credential.family_name);
 
     const data = fetch("http://localhost:5000/api/auth/login", {
         method: 'POST',

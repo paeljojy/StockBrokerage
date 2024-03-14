@@ -25,6 +25,7 @@ export default {
             // his Google account from the popup
             db: [],
             email: '',
+            isAdminLoggedIn: false,
             isUserLoggedIn: false,
             // TODO: could wrap user data in an object
             userFirstName: '',
@@ -305,7 +306,7 @@ export default {
             <button v-if="isUserLoggedIn" @click="get_database_data_from_server">Fetch Users from DB</button>
             <!-- <button @click="isUserLoggedIn = !isUserLoggedIn">Log in</button> -->
         </div>
-        <div>
+        <div class="login-button-container">
             <h1 v-if="isUserLoggedIn">Logged in as: {{userName}}</h1>
             <button @click="sendLogoutRequest" v-if="isUserLoggedIn">Log out</button>
             <GoogleLogin id="login-button" :callback="sendLoginRequest" v-if="!isUserLoggedIn"/>
@@ -314,20 +315,20 @@ export default {
             <h2>Trades made on this server</h2>
             <table class="Bids">
                 <tr>
-                    <th>Buyer</th>
-                    <th>Seller</th>
                     <th>Stock</th>
                     <th>Amount</th>
                     <th>Price</th>
                     <th>Date</th>
+                    <th v-if="isAdminLoggedIn">Buyer</th>
+                    <th v-if="isAdminLoggedIn">Seller</th>
                 </tr>
                 <tr v-for="(trade, index) in tradeDataList" :key="index">      
-                    <td>{{ trade[0] }}</td>
-                    <td>{{ trade[1] }}</td>
                     <td>Apple, Inc (AAPL)</td>
                     <td>{{ trade[3] }}</td>
                     <td>{{ trade[4] }}</td>
                     <td>{{ formateDate(trade[5]) }}</td>
+                    <td v-if="isAdminLoggedIn">{{ trade[0] }}</td>
+                    <td v-if="isAdminLoggedIn">{{ trade[1] }}</td>
                 </tr>
             </table>
             <button @click="requestTrades">Fetch server trades</button>
@@ -440,6 +441,12 @@ input::-webkit-outer-spin-button,
 .sell {
   background-color: #f44336;
   color: white;
+}
+
+.login-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 </style>
