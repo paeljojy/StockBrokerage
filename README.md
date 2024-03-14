@@ -6,11 +6,11 @@ Read docs/* for more information
 
 # Dependencies
 ## Frontend
-vuejs
+1. vuejs
 
 ## Backend
-flask
-sqlite
+1. flask
+2. sqlite
 
 # Building
 ## Frontend
