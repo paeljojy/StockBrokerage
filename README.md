@@ -7,25 +7,30 @@ Read docs/* for more information
 # Dependencies
 ## Frontend
 vuejs
+
 ## Backend
-expressjs
+flask
+sqlite
 
 # Building
-
 ## Frontend
 ```bash
 npm install
 npm run build
 
-# Run for development
+# Run frontend for development
 npm run dev 
 
 ## Backend
-npm install
 cd Server
-tsc && node dist/Server.js
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
 
-
+# Run backend for development
+flask --app Server/Server run
+# or 
+./Sripts/BuildAndLaunchServer.sh
 ```
 
 # Scripts provided
